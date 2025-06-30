@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu } from "lucide-react";
+import { Menu, Search, LogIn } from "lucide-react";
 import { FaTimes } from "react-icons/fa";
 import { BsBookmarkHeart, BsBook } from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
-import { Search } from "lucide-react";
+import { Link } from 'react-router-dom'; // ✅ import Link
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  // ✅ All navigation links
   const navLinks = [
-    { name: "My BookMarks", icon: <BsBookmarkHeart size={20} /> },
-    { name: "My E Books", icon: <BsBook size={20} /> },
-    { name: "Library", icon: <PiBooksFill size={20} /> },
-    { name: "Notification", icon: <IoMdNotificationsOutline size={20} /> },
-    { name: "Subscription", icon: <MdOutlineSubscriptions size={20} /> },
-    { name: "Settings", icon: <MdOutlineSettings size={20} /> },
+    { name: "My BookMarks", icon: <BsBookmarkHeart size={20} />, link: "#" },
+    { name: "My E Books", icon: <BsBook size={20} />, link: "#" },
+    { name: "Library", icon: <PiBooksFill size={20} />, link: "/library" },
+    { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
+    { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "#" },
+    { name: "Settings", icon: <MdOutlineSettings size={20} />, link: "#" },
+    { name: "Login", icon: <LogIn size={20} />, link: "/verse" }, // ✅ Goes to /verse
   ];
 
   const mobileNavVariants = {
@@ -41,20 +43,19 @@ export default function Navbar() {
             <ul className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href="#"
+                  <Link
+                    to={link.link}
                     className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-600"
                   >
                     {link.icon}
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
 
-            {/* Right Side Icons */}
+            {/* Right Icons */}
             <div className="flex items-center space-x-4">
-              {/* Desktop Search Icon */}
               <button
                 className="text-black hidden md:inline-flex"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -62,7 +63,7 @@ export default function Navbar() {
                 <Search size={24} />
               </button>
 
-              {/* Mobile Search & Menu Icons */}
+              {/* Mobile Icons */}
               <div className="md:hidden flex items-center space-x-4">
                 <button
                   className="text-black"
@@ -82,7 +83,7 @@ export default function Navbar() {
         </nav>
       )}
 
-      {/* Search Bar (Desktop and Mobile) */}
+      {/* Search Bar */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
@@ -119,17 +120,15 @@ export default function Navbar() {
             </button>
 
             {navLinks.map((link) => (
-              <motion.a
+              <Link
                 key={link.name}
-                href="#"
-                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-gray-600 transition"
+                to={link.link}
                 onClick={() => setIsMobileOpen(false)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-gray-600 transition"
               >
                 {link.icon}
                 {link.name}
-              </motion.a>
+              </Link>
             ))}
           </motion.div>
         )}
