@@ -1,6 +1,6 @@
 // src/pages/Library.jsx
 import React from "react";
-
+import { Link } from "react-router-dom"; 
 const books = [
   {
     title: "There's Something about Mira",
@@ -73,9 +73,11 @@ export default function ProductList() {
 
             {/* Hover Read Button */}
             <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+             <Link to="/read">
               <button className="bg-white hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded shadow ">
                 Read
               </button>
+             </Link>
             </div>
           </div>
         ))}

@@ -7,9 +7,12 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        cursive: ['"Dancing Script"', 'cursive'], // Add this line
+        cursive: ['"Dancing Script"', 'cursive'],
+      },
+      animation: {
+        'spin-slow': 'spin 10s linear infinite',
       },
     },
   },
   plugins: [],
-}
+};

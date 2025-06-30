@@ -7,6 +7,7 @@ import ParentVerseIntro from '../pages/parentverseIntro';
 import Signup from '../pages/signup';
 import Login from '../pages/login'
 import Library from '../pages/library';
+import BooksContent from '../pages/Bookscontent';
 
 export default function AppRouter() {
   return (
@@ -16,6 +17,7 @@ export default function AppRouter() {
       <Route path='/signup' element={<Signup/>}/>
       <Route path='/login' element={<Login/>}/>
        <Route path='/library' element={<Library/>}/>
+       <Route path='/read' element={<BooksContent/>}/>
     </Routes>
   );
 }
