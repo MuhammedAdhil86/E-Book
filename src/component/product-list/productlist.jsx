@@ -1,50 +1,47 @@
-// src/pages/Library.jsx
-import React from "react";
-import { Link } from "react-router-dom"; 
-const books = [
-  {
-    title: "There's Something about Mira",
-    image: "https://m.media-amazon.com/images/I/81l3rZK4lnL._SL1500_.jpg",
-    author: "Manali Dey",
-  },
-  {
-    title: "The Vibrant Years Novel",
-    image: "https://m.media-amazon.com/images/I/815qLcSL9LL._SY425_.jpg",
-    author: "Sonali Dev",
-  },
-  {
-    title: "The Wedding Setup - A Short Story",
-    image: "https://m.media-amazon.com/images/I/510fg-Akt4L._SY445_SX342_.jpg",
-    author: "Sonali Dev",
-  },
-  {
-    title: "The Emma Project Novel",
-    image: "https://m.media-amazon.com/images/I/81HWutvBrdL._SL1500_.jpg",
-    author: "Sonali Dev",
-  },
-    {
-    title: "There's Something about Mira",
-    image: "https://m.media-amazon.com/images/I/81l3rZK4lnL._SL1500_.jpg",
-    author: "Manali Dey",
-  },
-  {
-    title: "The Vibrant Years Novel",
-    image: "https://m.media-amazon.com/images/I/815qLcSL9LL._SY425_.jpg",
-    author: "Sonali Dev",
-  },
-  {
-    title: "The Wedding Setup - A Short Story",
-    image: "https://m.media-amazon.com/images/I/510fg-Akt4L._SY445_SX342_.jpg",
-    author: "Sonali Dev",
-  },
-  {
-    title: "The Emma Project Novel",
-    image: "https://m.media-amazon.com/images/I/81HWutvBrdL._SL1500_.jpg",
-    author: "Sonali Dev",
-  },
-];
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 
 export default function ProductList() {
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const getImageUrl = (url) => {
+    if (!url) return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
+    return url.startsWith("http")
+      ? url
+      : `https://mvdapi-mxjdw.ondigitalocean.app${url}`;
+  };
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const res = await axios.get("https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers");
+        const data = Array.isArray(res.data) ? res.data : res.data?.responsedata || [];
+
+        // ✅ Sort alphabetically by title (case-insensitive)
+        const sortedBooks = data.sort((a, b) => {
+          const titleA = (a.title || "").toLowerCase();
+          const titleB = (b.title || "").toLowerCase();
+          return titleA.localeCompare(titleB);
+        });
+
+        setBooks(sortedBooks);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load books.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, []);
+
+  if (loading) return <p className="text-center py-10">Loading books...</p>;
+  if (error) return <p className="text-center text-red-600">{error}</p>;
+  if (!books.length) return <p className="text-center text-gray-500">No books found.</p>;
+
   return (
     <section className="bg-white min-h-screen py-10 px-4 md:px-8 mt-10">
       <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
@@ -53,31 +50,27 @@ export default function ProductList() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {books.map((book, index) => (
           <div
-            key={index}
-            className="relative border border-gray-200 rounded-lg overflow-hidden shadow hover:shadow-lg transition group"
+            key={book._id || book.id || index}
+            className="relative group border rounded overflow-hidden shadow hover:shadow-lg transition"
           >
-            {/* Image */}
             <img
-              src={book.image}
+              src={getImageUrl(book.coverImageUrl)}
               alt={book.title}
               className="w-full h-56 object-cover"
+              onError={(e) =>
+                (e.target.src = "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover")
+              }
             />
-
-            {/* Info */}
-            <div className="p-4 space-y-1">
-              <h3 className="text-md font-semibold text-gray-900">
-                {book.title}
-              </h3>
-              <p className="text-sm text-gray-600">{book.author}</p>
+            <div className="p-4">
+              <h3 className="font-semibold text-gray-900 truncate">{book.title || "Untitled"}</h3>
+              <p className="text-sm text-gray-600">{book.author || "Unknown Author"}</p>
             </div>
-
-            {/* Hover Read Button */}
             <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-             <Link to="/read">
-              <button className="bg-white hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded shadow ">
-                Read
-              </button>
-             </Link>
+              <Link to={`/read/${book._id || book.id}`}>
+                <button className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500">
+                  Read
+                </button>
+              </Link>
             </div>
           </div>
         ))}

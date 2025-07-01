@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Search, LogIn } from "lucide-react";
 import { FaTimes } from "react-icons/fa";
@@ -6,13 +6,16 @@ import { BsBookmarkHeart, BsBook } from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
-import { Link } from 'react-router-dom'; // ✅ import Link
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const navigate = useNavigate();
 
-  // ✅ All navigation links
   const navLinks = [
     { name: "My BookMarks", icon: <BsBookmarkHeart size={20} />, link: "#" },
     { name: "My E Books", icon: <BsBook size={20} />, link: "#" },
@@ -20,7 +23,7 @@ export default function Navbar() {
     { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
     { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "#" },
     { name: "Settings", icon: <MdOutlineSettings size={20} />, link: "#" },
-    { name: "Login", icon: <LogIn size={20} />, link: "/verse" }, // ✅ Goes to /verse
+    { name: "Login", icon: <LogIn size={20} />, link: "/verse" },
   ];
 
   const mobileNavVariants = {
@@ -29,17 +32,36 @@ export default function Navbar() {
     exit: { opacity: 0, y: -30, transition: { duration: 0.4, ease: 'easeInOut' } },
   };
 
+  useEffect(() => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const res = await axios.get("https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers");
+        const filtered = res.data.filter((book) =>
+          book.title.toLowerCase().includes(query.toLowerCase())
+        );
+        setSuggestions(filtered.slice(0, 5));
+      } catch (err) {
+        console.error("Search fetch error:", err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [query]);
+
   return (
     <>
       {!isMobileOpen && (
         <nav className="fixed inset-x-0 top-0 z-50 bg-white text-black border-b border-gray-200 shadow-sm">
           <div className="container mx-auto flex items-center justify-between px-4 py-4">
-            {/* Logo */}
             <div className="text-xl font-bold uppercase tracking-widest">
               Motor Vehicle Law
             </div>
 
-            {/* Desktop Nav */}
             <ul className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
                 <li key={link.name}>
@@ -54,7 +76,6 @@ export default function Navbar() {
               ))}
             </ul>
 
-            {/* Right Icons */}
             <div className="flex items-center space-x-4">
               <button
                 className="text-black hidden md:inline-flex"
@@ -63,7 +84,6 @@ export default function Navbar() {
                 <Search size={24} />
               </button>
 
-              {/* Mobile Icons */}
               <div className="md:hidden flex items-center space-x-4">
                 <button
                   className="text-black"
@@ -83,20 +103,40 @@ export default function Navbar() {
         </nav>
       )}
 
-      {/* Search Bar */}
+      {/* Search Bar with Suggestions */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-[72px] w-full bg-gray-100 text-gray-900 p-4 flex justify-center z-40"
+            className="absolute top-[72px] w-full bg-gray-100 text-gray-900 p-4 flex flex-col items-center z-40"
           >
             <input
               type="text"
               placeholder="Search for items..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               className="w-3/4 p-2 rounded-md bg-white text-gray-900 border border-gray-300 focus:outline-none"
             />
+
+            {suggestions.length > 0 && (
+              <ul className="w-3/4 bg-white border border-gray-300 mt-2 rounded shadow text-sm">
+                {suggestions.map((book) => (
+                  <li
+                    key={book.id}
+                    onClick={() => {
+                      setQuery('');
+                      setIsSearchOpen(false);
+                      navigate(`/read/${book.id}`);
+                    }}
+                    className="p-2 hover:bg-gray-200 cursor-pointer"
+                  >
+                    {book.title}
+                  </li>
+                ))}
+              </ul>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
