@@ -1,31 +1,66 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ import
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import api from "../api/Instance"; // ✅ axios instance with baseURL
 
 export default function Login() {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
-  const navigate = useNavigate(); // ✅ create navigate function
+  const navigate = useNavigate();
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     if (!showOtp) {
-      if (mobile.length !== 10) {
+      // Validate mobile number format
+      if (mobile.length !== 10 || !/^[6-9]\d{9}$/.test(mobile)) {
         toast.error("Please enter a valid 10-digit mobile number.");
         return;
       }
-      setShowOtp(true);
-      toast.success("OTP sent to your number.");
+
+      try {
+        const res = await api.post("/user/reader/login", { mobile });
+        console.log("Login OTP Response:", res.data);
+
+        if (res.data?.status === true) {
+          setShowOtp(true);
+          toast.success("✅ OTP sent to your number.");
+        } else {
+          toast.error(res.data?.message || "❌ Failed to send OTP.");
+        }
+      } catch (error) {
+        console.error("Login OTP error:", error?.response?.data || error);
+        toast.error(error?.response?.data?.error || "Server error while sending OTP.");
+      }
     } else {
-      if (otp === "1234") {
-        toast.success("✅ Logged in successfully!");
-        setTimeout(() => {
-          navigate("/"); // ✅ navigate to home
-        }, 1000);
-      } else {
-        toast.error("❌ Incorrect OTP. Try again.");
+      // Verify OTP
+      if (!otp || otp.length < 4) {
+        toast.error("Please enter a valid OTP.");
+        return;
+      }
+
+      try {
+        const res = await api.post("/user/reader/verifyloginotp", {
+          mobile,
+          otp,
+        });
+        console.log("Verify OTP Response:", res.data);
+
+        if (res.data?.status === true) {
+          toast.success("🎉 Successfully logged in!");
+          // Optionally store token:
+          // localStorage.setItem("token", res.data.token);
+
+          setTimeout(() => {
+            navigate("/"); // ✅ Redirect to homepage
+          }, 1000);
+        } else {
+          toast.error(res.data?.message || "❌ Incorrect OTP. Try again.");
+        }
+      } catch (error) {
+        console.error("OTP verification error:", error?.response?.data || error);
+        toast.error(error?.response?.data?.error || "Failed to verify OTP.");
       }
     }
   };
@@ -37,11 +72,10 @@ export default function Login() {
         <div className="flex items-center justify-between">
           <button
             className="text-gray-600 text-xl"
-            onClick={() => {
-              if (showOtp) setShowOtp(false);
-            }}
+            onClick={() => setShowOtp(false)}
+            type="button"
           >
-            &larr;
+            {showOtp ? "←" : ""}
           </button>
           <h2 className="text-md font-medium text-gray-700">Login</h2>
           <div className="w-6" />
@@ -84,9 +118,9 @@ export default function Login() {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 1234"
+                placeholder="Enter OTP"
                 className="w-full border border-gray-300 rounded px-3 py-2 bg-white text-sm outline-none"
-                maxLength={4}
+                maxLength={6}
               />
             </div>
           )}
@@ -99,9 +133,9 @@ export default function Login() {
             {showOtp ? "Verify OTP" : "Get OTP"}
           </button>
 
-          {/* Switch to Signup */}
+          {/* Link to Signup */}
           <p className="text-xs text-center text-gray-500">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a href="/signup" className="text-blue-600 font-medium">
               Create Account
             </a>

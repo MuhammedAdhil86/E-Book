@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import html2pdf from "html2pdf.js";
 import {
   FaChevronDown,
@@ -12,10 +11,10 @@ import {
   FaCompress,
   FaFilePdf,
 } from "react-icons/fa";
+import api from "../../api/Instance";
 
 export default function BookReader() {
-  const { id } = useParams();
-  const bookId = id;
+  const { id: bookId } = useParams();
   const [bookInfo, setBookInfo] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [expandedChapter, setExpandedChapter] = useState(null);
@@ -25,31 +24,26 @@ export default function BookReader() {
   const contentRef = useRef();
 
   useEffect(() => {
-    const fetchBookInfo = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get(`https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/cover/${bookId}`);
-        setBookInfo(res.data);
-      } catch (err) {
-        console.error("Error fetching book info:", err);
-      }
-    };
+        const [bookRes, contentRes] = await Promise.all([
+          api.get(`/ebook/cover/${bookId}`),
+          api.get(`/ebook-content/${bookId}`),
+        ]);
 
-    const fetchChapters = async () => {
-      try {
-        const res = await axios.get(`https://mvdapi-mxjdw.ondigitalocean.app/api/ebook-content/${bookId}`);
-        const numbered = generateNumberedTree(res.data);
+        setBookInfo(bookRes.data);
+        const numbered = generateNumberedTree(contentRes.data);
         setChapters(numbered);
-      } catch (err) {
-        console.error("Error fetching chapter data:", err);
+      } catch (error) {
+        console.error("Error loading book data:", error);
       }
     };
 
-    fetchBookInfo();
-    fetchChapters();
+    fetchData();
   }, [bookId]);
 
-  const generateNumberedTree = (nodes, prefix = []) => {
-    return nodes.map((node, index) => {
+  const generateNumberedTree = (nodes, prefix = []) =>
+    nodes.map((node, index) => {
       const numbering = [...prefix, index + 1].join(".");
       const numberedNode = { ...node, numbering };
       if (node.children) {
@@ -57,19 +51,18 @@ export default function BookReader() {
       }
       return numberedNode;
     });
-  };
 
   const toggleChapter = (id) => {
     setExpandedChapter(expandedChapter === id ? null : id);
   };
 
   const handleTopicClick = (topic) => setSelectedTopic(topic);
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 200));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 50));
-  const toggleFullScreen = () => setIsFullscreen((prev) => !prev);
+  const handleZoomIn = () => setZoom((z) => Math.min(z + 10, 200));
+  const handleZoomOut = () => setZoom((z) => Math.max(z - 10, 50));
+  const toggleFullScreen = () => setIsFullscreen((fs) => !fs);
 
   const flattenTopics = (nodes = []) =>
-    nodes.flatMap((node) => [node, ...flattenTopics(node.children || [])]);
+    nodes.flatMap((n) => [n, ...flattenTopics(n.children || [])]);
 
   const flatTopics = flattenTopics(chapters);
   const selectedIndex = flatTopics.findIndex((t) => t.id === selectedTopic?.id);
@@ -77,18 +70,19 @@ export default function BookReader() {
   const nextTopic = flatTopics[selectedIndex + 1];
 
   const renderTopics = (topics) => (
-    <ul className="pl-4 py-2 space-y-1">
+    <ul className="pl-4 py-2 space-y-1  ">
       {topics.map((topic) => (
         <li key={topic.id}>
           <button
             onClick={() => handleTopicClick(topic)}
-            className={`block w-full text-left px-2 py-1 rounded ${
-              selectedTopic?.id === topic.id
-                ? "bg-yellow-300 font-bold"
-                : "hover:bg-yellow-100"
+            className={`block w-full text-left px-2 py-1 rounded  ${
+              selectedTopic?.id === topic.id ? "bg-yellow-300 font-bold" : "hover:bg-yellow-100"
             }`}
           >
-            {topic.numbering}. {topic.title}
+            {topic.numbering}. {topic.header}
+            {topic.header && (
+              <div className="text-xs text-gray-500 italic ml-4 ">— {topic.title}</div>
+            )}
           </button>
           {topic.children && renderTopics(topic.children)}
         </li>
@@ -97,140 +91,122 @@ export default function BookReader() {
   );
 
   const downloadFullBookPDF = () => {
-    const printElement = document.createElement("div");
-    printElement.style.width = "210mm";
-    printElement.style.minHeight = "297mm";
-    printElement.style.padding = "20mm";
-    printElement.style.fontFamily = "Georgia, serif";
-    printElement.style.lineHeight = "1.6";
-    printElement.style.fontSize = "14px";
-    printElement.style.color = "#000";
-    printElement.style.backgroundColor = "#fff";
+    const container = document.createElement("div");
+    container.style.width = "210mm";
+    container.style.minHeight = "297mm";
+    container.style.padding = "20mm";
+    container.style.fontFamily = "Georgia, serif";
+    container.style.lineHeight = "1.6";
+    container.style.fontSize = "14px";
+    container.style.color = "#000";
+    container.style.backgroundColor = "#fff";
 
-    // Cover Page
     const cover = document.createElement("div");
-    cover.style.textAlign = "center";
     cover.style.pageBreakAfter = "always";
+    cover.style.textAlign = "center";
     cover.innerHTML = `
-      <h1 style="font-size: 32px; font-weight: bold; margin-bottom: 12px;">
-        ${bookInfo?.title || "Book Title"}
-      </h1>
-      <h2 style="font-size: 20px; font-weight: normal; margin-bottom: 20px;">
-        ${bookInfo?.author || "Author Name"}
-      </h2>
-      <img src="${bookInfo?.cover_image || "/bookimage.jpg"}" crossorigin="anonymous" style="max-width: 70%; height: auto;" />
+      <h1 style="font-size: 32px; font-weight: bold;">${bookInfo?.responsedata?.title || "Book Title"}</h1>
+      <h2 style="font-size: 18px; font-weight: normal; margin: 10px 0;">${bookInfo?.responsedata?.author || "Author"}</h2>
+      <img src="${bookInfo?.responsedata?.cover_image || "/bookimage.jpg"}" crossorigin="anonymous" style="max-width: 60%; height: auto;" />
     `;
-    printElement.appendChild(cover);
+    container.appendChild(cover);
 
-    // Index Page
     const indexPage = document.createElement("div");
     indexPage.style.pageBreakAfter = "always";
-    indexPage.innerHTML = `<h2 style="font-size: 22px; font-weight: bold; margin-bottom: 15px;">Index</h2>`;
+    indexPage.innerHTML = `<h2 style="font-size: 22px; font-weight: bold;">Index</h2>`;
     const indexList = document.createElement("ul");
-    indexList.style.paddingLeft = "20px";
     indexList.style.listStyle = "none";
+    indexList.style.paddingLeft = "0";
 
-    const renderIndex = (topics, parentUl) => {
+    const buildIndex = (topics, ul = indexList) => {
       topics.forEach((topic) => {
         const li = document.createElement("li");
-        li.style.marginTop = "5px";
-        li.innerText = `${topic.numbering}. ${topic.title}`;
-        parentUl.appendChild(li);
+        li.style.margin = "5px 0";
+        li.innerText = `${topic.numbering}. ${topic.header}`;
+        ul.appendChild(li);
 
         if (topic.children) {
-          const childUl = document.createElement("ul");
-          childUl.style.marginLeft = "20px";
-          li.appendChild(childUl);
-          renderIndex(topic.children, childUl);
+          const subUl = document.createElement("ul");
+          subUl.style.marginLeft = "20px";
+          li.appendChild(subUl);
+          buildIndex(topic.children, subUl);
         }
       });
     };
 
-    chapters.forEach((ch) => {
+    chapters.forEach((chapter) => {
       const chLi = document.createElement("li");
-      chLi.style.marginTop = "10px";
-      chLi.innerHTML = `<strong>${ch.numbering}. ${ch.title}</strong>`;
-      const ul = document.createElement("ul");
-      renderIndex(ch.children || [], ul);
-      chLi.appendChild(ul);
+      chLi.style.margin = "8px 0";
+      chLi.innerHTML = `<strong>${chapter.numbering}. ${chapter.title}</strong>`;
+      const subUl = document.createElement("ul");
+      buildIndex(chapter.children || [], subUl);
+      chLi.appendChild(subUl);
       indexList.appendChild(chLi);
     });
 
     indexPage.appendChild(indexList);
-    printElement.appendChild(indexPage);
+    container.appendChild(indexPage);
 
-    // Topics Content
     const renderTopicContent = (topics) => {
       topics.forEach((topic) => {
-        const topicSection = document.createElement("div");
-        topicSection.style.marginBottom = "20px";
-        topicSection.style.border = "1px solid #ccc";
-        topicSection.style.padding = "15px";
-        topicSection.style.borderRadius = "6px";
-        topicSection.style.pageBreakInside = "avoid";
+        const section = document.createElement("div");
+        section.style.pageBreakInside = "avoid";
+        section.style.margin = "25px 0";
 
-        topicSection.innerHTML = `
-          <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">
-            ${topic.numbering}. ${topic.title}
+        section.innerHTML = `
+          <h3 style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+            ${topic.numbering}. ${topic.header}
+            ${topic.title ? `<br/><span style="font-size: 14px; font-weight: normal;">${topic.title}</span>` : ""}
           </h3>
-          <div>${topic.verified_content || ""}</div>
+          <div style="font-size: 14px;">${topic.verified_content || ""}</div>
         `;
-        printElement.appendChild(topicSection);
+        container.appendChild(section);
 
         if (topic.children) renderTopicContent(topic.children);
       });
     };
 
-    chapters.forEach((chapter) => {
-      const chapterHeader = document.createElement("h2");
-      chapterHeader.style.fontSize = "18px";
-      chapterHeader.style.fontWeight = "bold";
-      chapterHeader.style.marginTop = "30px";
-      chapterHeader.innerText = `${chapter.numbering}. ${chapter.title}`;
-      printElement.appendChild(chapterHeader);
-      renderTopicContent(chapter.children || []);
+    chapters.forEach((ch) => {
+      const chHeader = document.createElement("div");
+      chHeader.style.pageBreakBefore = "always";
+      chHeader.innerHTML = `<h2 style="font-size: 20px; font-weight: bold;">${ch.numbering}. ${ch.title}</h2>`;
+      container.appendChild(chHeader);
+      renderTopicContent(ch.children || []);
     });
 
-    document.body.appendChild(printElement);
+    document.body.appendChild(container);
 
     setTimeout(() => {
       html2pdf()
         .set({
           margin: 0,
-          filename: `${bookInfo?.title || "ebook"}.pdf`,
+          filename: `${bookInfo?.responsedata?.title || "ebook"}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: true, scrollY: 0 },
+          html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
           pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         })
-        .from(printElement)
+        .from(container)
         .save()
-        .then(() => {
-          setTimeout(() => {
-            printElement.remove();
-          }, 2000);
-        });
-    }, 1000);
+        .then(() => setTimeout(() => container.remove(), 1500));
+    }, 800);
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-white mt-10">
+    <div className="flex flex-col md:flex-row min-h-screen bg-white mt-16">
       <aside className={`md:w-1/4 bg-white shadow-md p-4 overflow-y-auto ${isFullscreen ? "hidden" : ""}`}>
-        <h1 className="text-lg font-bold text-black mb-2">{bookInfo?.title}</h1>
-        <p className="text-sm italic text-gray-600 mb-4">{bookInfo?.author}</p>
-
-        {chapters.map((chapter) => (
-          <div key={chapter.id}>
+        {chapters.map((ch) => (
+          <div key={ch.id}>
             <button
-              onClick={() => toggleChapter(chapter.id)}
+              onClick={() => toggleChapter(ch.id)}
               className="w-full text-left font-semibold py-2 border-b"
             >
-              {chapter.title}
+              {ch.title}
               <span className="float-right">
-                {expandedChapter === chapter.id ? <FaChevronDown /> : <FaChevronRight />}
+                {expandedChapter === ch.id ? <FaChevronDown /> : <FaChevronRight />}
               </span>
             </button>
-            {expandedChapter === chapter.id && renderTopics(chapter.children || [])}
+            {expandedChapter === ch.id && renderTopics(ch.children || [])}
           </div>
         ))}
       </aside>
@@ -240,29 +216,17 @@ export default function BookReader() {
           <div style={{ fontSize: `${zoom}%` }} ref={contentRef}>
             <div className="flex justify-between items-center mb-3 text-black">
               <div className="flex space-x-2">
-                <button
-                  className="p-2 rounded disabled:opacity-50"
-                  onClick={() => handleTopicClick(prevTopic)}
-                  disabled={!prevTopic}
-                >
+                <button className="p-2 rounded disabled:opacity-50" onClick={() => handleTopicClick(prevTopic)} disabled={!prevTopic}>
                   <FaChevronLeft />
                 </button>
-                <button
-                  className="p-2 rounded disabled:opacity-50"
-                  onClick={() => handleTopicClick(nextTopic)}
-                  disabled={!nextTopic}
-                >
+                <button className="p-2 rounded disabled:opacity-50" onClick={() => handleTopicClick(nextTopic)} disabled={!nextTopic}>
                   <FaChevronRight />
                 </button>
               </div>
               <div className="flex items-center space-x-3">
-                <button onClick={handleZoomOut} className="p-1">
-                  <FaSearchMinus />
-                </button>
+                <button onClick={handleZoomOut} className="p-1"><FaSearchMinus /></button>
                 <span className="w-12 text-center">{zoom}%</span>
-                <button onClick={handleZoomIn} className="p-1">
-                  <FaSearchPlus />
-                </button>
+                <button onClick={handleZoomIn} className="p-1"><FaSearchPlus /></button>
                 <button onClick={toggleFullScreen} className="p-1" title="Fullscreen">
                   {isFullscreen ? <FaCompress /> : <FaExpand />}
                 </button>
@@ -273,12 +237,17 @@ export default function BookReader() {
             </div>
 
             <div className="mb-5 text-center">
-              <div className="text-xl font-bold text-black">{bookInfo?.title}</div>
-              <div className="text-gray-700 text-sm italic">{bookInfo?.author}</div>
+              <div className="text-xl font-bold text-black">{bookInfo?.responsedata?.title}</div>
+              <div className="text-gray-700 text-sm italic">{bookInfo?.responsedata?.author}</div>
             </div>
 
             <div className="bg-white p-6 rounded shadow border">
-              <h2 className="text-2xl font-bold mb-4">{selectedTopic.numbering}. {selectedTopic.title}</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {selectedTopic.numbering}. {selectedTopic.header}
+              </h2>
+              {selectedTopic.header && (
+                <h3 className="text-lg italic text-gray-600 mb-4">{selectedTopic.title}</h3>
+              )}
               <div
                 className="text-gray-800 text-justify leading-7"
                 dangerouslySetInnerHTML={{ __html: selectedTopic.verified_content }}
@@ -286,9 +255,11 @@ export default function BookReader() {
             </div>
           </div>
         ) : (
-          <div className="flex justify-center items-center h-full">
+          <div className="flex flex-col justify-center items-center h-full text-center">
+            <h1 className="text-xl font-bold mb-2 text-black">{bookInfo?.responsedata?.title}</h1>
+            <h2 className="text-md italic text-gray-600 mb-4">{bookInfo?.responsedata?.author}</h2>
             <img
-              src={bookInfo?.cover_image || "/bookimage.jpg"}
+              src={bookInfo?.responsedata?.cover_image || "/bookimage.jpg"}
               alt="Book Cover"
               className="max-h-[500px]"
             />

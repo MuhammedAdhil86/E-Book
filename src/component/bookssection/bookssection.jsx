@@ -4,7 +4,7 @@ import { Pagination } from "swiper/modules";
 import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
-import axios from "axios";
+import api from "../../api/Instance";
 
 export default function BooksSection() {
   const [books, setBooks] = useState([]);
@@ -12,17 +12,13 @@ export default function BooksSection() {
 
   const getImageUrl = (url) => {
     if (!url) return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
-    if (url.startsWith("http")) return url;
-    return `https://mvdapi-mxjdw.ondigitalocean.app${url}`;
+    return url.startsWith("http") ? url : `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}${url}`;
   };
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await axios.get(
-          "https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers"
-        );
-
+        const res = await api.get("/ebook/covers");
         if (Array.isArray(res.data)) {
           setBooks(res.data);
         } else if (Array.isArray(res.data?.responsedata)) {
@@ -66,34 +62,21 @@ export default function BooksSection() {
             </p>
             <Link to="/library">
               <button className="bg-yellow-500 text-white text-sm px-4 py-2 rounded hover:bg-yellow-600 transition">
-              View All Books
-            </button>
+                View All Books
+              </button>
             </Link>
-          
           </div>
         </div>
 
-        {/* Swiper for all screens */}
+        {/* Swiper */}
         <Swiper
           spaceBetween={20}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
+          pagination={{ clickable: true, dynamicBullets: true }}
           breakpoints={{
-            0: {
-              slidesPerView: 1.2,
-              centeredSlides: true,
-            },
-            768: {
-              slidesPerView: 2.5,
-            },
-            1024: {
-              slidesPerView: 3.5,
-            },
-            1280: {
-              slidesPerView: 4,
-            },
+            0: { slidesPerView: 1.2, centeredSlides: true },
+            768: { slidesPerView: 2.5 },
+            1024: { slidesPerView: 3.5 },
+            1280: { slidesPerView: 4 },
           }}
           modules={[Pagination]}
           className="pb-10"
@@ -105,10 +88,9 @@ export default function BooksSection() {
                   src={getImageUrl(book.coverImageUrl)}
                   alt={book.title || "Book"}
                   className="w-44 lg:w-48 rounded shadow-md hover:scale-105 transition-transform duration-300"
-                  onError={(e) =>
-                    (e.target.src =
-                      "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover")
-                  }
+                  onError={(e) => {
+                    e.target.src = "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
+                  }}
                 />
                 <p className="text-sm font-medium text-gray-800">
                   {book.title || "Untitled"}
