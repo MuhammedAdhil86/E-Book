@@ -1,11 +1,10 @@
-// src/api/Instance.js
 import axios from "axios";
+import Cookies from "js-cookie";
 
-// Fallback to live API if VITE_API_BASE_URL is not set
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://mvdapi-mxjdw.ondigitalocean.app/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://mvdapi-mxjdw.ondigitalocean.app/api";
 
-// Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -15,13 +14,16 @@ const api = axios.create({
   },
 });
 
-// ✅ Optional: Add interceptors to handle request/response errors globally
+api.interceptors.request.use((config) => {
+  const token = Cookies.get("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Log error globally
     console.error("API Error:", error.response || error.message);
-    // Forward the error to the calling function
     return Promise.reject(error);
   }
 );

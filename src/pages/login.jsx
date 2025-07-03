@@ -1,74 +1,39 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import api from "../api/Instance"; // ✅ axios instance with baseURL
+import { useBookStore } from "../component/store/useBookStore";
 
 export default function Login() {
-  const [mobile, setMobile] = useState("");
-  const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const mobile = useBookStore((s) => s.mobile);
+  const setMobile = useBookStore((s) => s.setMobile);
+  const sendOtp = useBookStore((s) => s.sendOtp);
+  const verifyOtp = useBookStore((s) => s.verifyOtp);
   const navigate = useNavigate();
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
+  const handleSendOtp = async () => {
+    try {
+      await sendOtp(mobile);
+      setShowOtp(true);
+      alert("OTP sent successfully");
+    } catch (e) {
+      alert("Failed to send OTP");
+    }
+  };
 
-    if (!showOtp) {
-      // Validate mobile number format
-      if (mobile.length !== 10 || !/^[6-9]\d{9}$/.test(mobile)) {
-        toast.error("Please enter a valid 10-digit mobile number.");
-        return;
-      }
-
-      try {
-        const res = await api.post("/user/reader/login", { mobile });
-        console.log("Login OTP Response:", res.data);
-
-        if (res.data?.status === true) {
-          setShowOtp(true);
-          toast.success("✅ OTP sent to your number.");
-        } else {
-          toast.error(res.data?.message || "❌ Failed to send OTP.");
-        }
-      } catch (error) {
-        console.error("Login OTP error:", error?.response?.data || error);
-        toast.error(error?.response?.data?.error || "Server error while sending OTP.");
-      }
-    } else {
-      // Verify OTP
-      if (!otp || otp.length < 4) {
-        toast.error("Please enter a valid OTP.");
-        return;
-      }
-
-      try {
-        const res = await api.post("/user/reader/verifyloginotp", {
-          mobile,
-          otp,
-        });
-        console.log("Verify OTP Response:", res.data);
-
-        if (res.data?.status === true) {
-          toast.success("🎉 Successfully logged in!");
-          // Optionally store token:
-          // localStorage.setItem("token", res.data.token);
-
-          setTimeout(() => {
-            navigate("/"); // ✅ Redirect to homepage
-          }, 1000);
-        } else {
-          toast.error(res.data?.message || "❌ Incorrect OTP. Try again.");
-        }
-      } catch (error) {
-        console.error("OTP verification error:", error?.response?.data || error);
-        toast.error(error?.response?.data?.error || "Failed to verify OTP.");
-      }
+  const handleVerifyOtp = async () => {
+    try {
+      await verifyOtp(mobile, otp);
+      alert("Login successful");
+      navigate("/");
+    } catch (e) {
+      alert("Invalid OTP");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <button
             className="text-gray-600 text-xl"
@@ -81,15 +46,13 @@ export default function Login() {
           <div className="w-6" />
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleLoginSubmit} className="space-y-6">
+        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
           <div>
             <label className="block text-gray-800 font-semibold text-lg mb-1">
               Welcome Back
             </label>
           </div>
 
-          {/* Mobile Number */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-600">
               Mobile Number
@@ -100,7 +63,6 @@ export default function Login() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
-                required
                 placeholder="9876543210"
                 className="w-full outline-none text-sm"
                 disabled={showOtp}
@@ -108,7 +70,6 @@ export default function Login() {
             </div>
           </div>
 
-          {/* OTP Field */}
           {showOtp && (
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-600">
@@ -118,22 +79,21 @@ export default function Login() {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter OTP"
+                placeholder="Enter 6-digit OTP"
                 className="w-full border border-gray-300 rounded px-3 py-2 bg-white text-sm outline-none"
                 maxLength={6}
               />
             </div>
           )}
 
-          {/* Submit */}
           <button
-            type="submit"
+            type="button"
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 rounded transition"
+            onClick={showOtp ? handleVerifyOtp : handleSendOtp}
           >
             {showOtp ? "Verify OTP" : "Get OTP"}
           </button>
 
-          {/* Link to Signup */}
           <p className="text-xs text-center text-gray-500">
             Don&apos;t have an account?{" "}
             <a href="/signup" className="text-blue-600 font-medium">

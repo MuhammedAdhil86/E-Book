@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, LogIn } from "lucide-react";
+import { Menu, Search, LogIn, LogOut } from "lucide-react";
 import { FaTimes } from "react-icons/fa";
 import { BsBookmarkHeart, BsBook } from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
@@ -8,13 +8,22 @@ import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useBookStore } from '../store/useBookStore';
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+
   const navigate = useNavigate();
+  const isAuthenticated = useBookStore((s) => s.isAuthenticated);
+  const logout = useBookStore((s) => s.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // redirect to homepage
+  };
 
   const navLinks = [
     { name: "My BookMarks", icon: <BsBookmarkHeart size={20} />, link: "#" },
@@ -23,14 +32,7 @@ export default function Navbar() {
     { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
     { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "#" },
     { name: "Settings", icon: <MdOutlineSettings size={20} />, link: "#" },
-    { name: "Login", icon: <LogIn size={20} />, link: "/verse" },
   ];
-
-  const mobileNavVariants = {
-    hidden: { opacity: 0, y: -60, transition: { duration: 0.4, ease: 'easeInOut' } },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeInOut' } },
-    exit: { opacity: 0, y: -30, transition: { duration: 0.4, ease: 'easeInOut' } },
-  };
 
   useEffect(() => {
     if (!query.trim()) {
@@ -41,7 +43,8 @@ export default function Navbar() {
     const timeoutId = setTimeout(async () => {
       try {
         const res = await axios.get("https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers");
-        const filtered = res.data.filter((book) =>
+        const books = res.data.responsedata || [];
+        const filtered = books.filter((book) =>
           book.title.toLowerCase().includes(query.toLowerCase())
         );
         setSuggestions(filtered.slice(0, 5));
@@ -74,6 +77,25 @@ export default function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li>
+                {isAuthenticated ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-sm font-medium text-black hover:text-red-600"
+                  >
+                    <LogOut size={20} />
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    to="/verse"
+                    className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-600"
+                  >
+                    <LogIn size={20} />
+                    Login
+                  </Link>
+                )}
+              </li>
             </ul>
 
             <div className="flex items-center space-x-4">
@@ -103,7 +125,7 @@ export default function Navbar() {
         </nav>
       )}
 
-      {/* Search Bar with Suggestions */}
+      {/* 🔍 Search Suggestions */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
@@ -141,15 +163,14 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Fullscreen Nav */}
+      {/* 📱 Mobile Nav */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
             key="mobileNav"
-            variants={mobileNavVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial={{ opacity: 0, y: -60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -30 }}
             className="fixed inset-0 z-50 bg-gray-100 flex flex-col justify-center items-center px-6 space-y-6"
           >
             <button
@@ -170,6 +191,28 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
+
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMobileOpen(false);
+                }}
+                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-red-600 transition"
+              >
+                <LogOut size={20} />
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/verse"
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-gray-600 transition"
+              >
+                <LogIn size={20} />
+                Login
+              </Link>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
