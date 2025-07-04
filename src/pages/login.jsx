@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useBookStore } from "../component/store/useBookStore";
+import { useBookStore } from "../store/useBookStore";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
@@ -15,24 +17,25 @@ export default function Login() {
     try {
       await sendOtp(mobile);
       setShowOtp(true);
-      alert("OTP sent successfully");
+      toast.success("OTP sent successfully");
     } catch (e) {
-      alert("Failed to send OTP");
+      toast.error("Failed to send OTP");
     }
   };
 
   const handleVerifyOtp = async () => {
     try {
       await verifyOtp(mobile, otp);
-      alert("Login successful");
+      toast.success("Login successful");
       navigate("/");
     } catch (e) {
-      alert("Invalid OTP");
+      toast.error("Invalid OTP");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <ToastContainer />
       <div className="w-full max-w-sm space-y-6">
         <div className="flex items-center justify-between">
           <button

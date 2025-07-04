@@ -9,7 +9,7 @@ import {
   FaFilePdf,
 } from 'react-icons/fa';
 import { useBookStore } from '../../store/useBookStore';
-import { downloadFullBookPDF } from '../../utils/pdfUtils';
+
 
 export default function Toolbar() {
   const {

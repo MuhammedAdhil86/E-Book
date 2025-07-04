@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, LogIn, LogOut } from "lucide-react";
+import {
+  Menu,
+  Search,
+  LogIn,
+  LogOut
+} from "lucide-react";
 import { FaTimes } from "react-icons/fa";
-import { BsBookmarkHeart, BsBook } from "react-icons/bs";
+import {
+  BsBookmarkHeart,
+  BsBook
+} from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
+import {
+  MdOutlineSubscriptions,
+  MdOutlineSettings
+} from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useBookStore } from '../store/useBookStore';
+import { useBookStore } from '../../store/useBookStore';
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -22,7 +33,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate('/'); // redirect to homepage
+    navigate('/');
   };
 
   const navLinks = [
@@ -40,7 +51,7 @@ export default function Navbar() {
       return;
     }
 
-    const timeoutId = setTimeout(async () => {
+    const timeout = setTimeout(async () => {
       try {
         const res = await axios.get("https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers");
         const books = res.data.responsedata || [];
@@ -49,135 +60,123 @@ export default function Navbar() {
         );
         setSuggestions(filtered.slice(0, 5));
       } catch (err) {
-        console.error("Search fetch error:", err);
+        console.error("Search Error:", err);
       }
     }, 300);
 
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(timeout);
   }, [query]);
 
   return (
     <>
-      {!isMobileOpen && (
-        <nav className="fixed inset-x-0 top-0 z-50 bg-white text-black border-b border-gray-200 shadow-sm">
-          <div className="container mx-auto flex items-center justify-between px-4 py-4">
-            <div className="text-xl font-bold uppercase tracking-widest">
-              Motor Vehicle Law
-            </div>
-
-            <ul className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.link}
-                    className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-600"
-                  >
-                    {link.icon}
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                {isAuthenticated ? (
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 text-sm font-medium text-black hover:text-red-600"
-                  >
-                    <LogOut size={20} />
-                    Logout
-                  </button>
-                ) : (
-                  <Link
-                    to="/verse"
-                    className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-600"
-                  >
-                    <LogIn size={20} />
-                    Login
-                  </Link>
-                )}
-              </li>
-            </ul>
-
-            <div className="flex items-center space-x-4">
-              <button
-                className="text-black hidden md:inline-flex"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-              >
-                <Search size={24} />
-              </button>
-
-              <div className="md:hidden flex items-center space-x-4">
-                <button
-                  className="text-black"
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                >
-                  <Search size={24} />
-                </button>
-                <button
-                  className="text-black z-50"
-                  onClick={() => setIsMobileOpen(true)}
-                >
-                  <Menu size={26} />
-                </button>
-              </div>
-            </div>
+      {/* Top Navigation Bar */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-white text-black border-b shadow-sm">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4">
+          <div className="text-lg sm:text-xl font-bold tracking-wider">
+            Motor Vehicle Law
           </div>
-        </nav>
-      )}
 
-      {/* 🔍 Search Suggestions */}
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center space-x-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.link}
+                className="flex items-center gap-2 text-sm font-medium hover:text-yellow-600"
+              >
+                {link.icon}
+                {link.name}
+              </Link>
+            ))}
+            {isAuthenticated ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-sm font-medium hover:text-red-600"
+              >
+                <LogOut size={20} />
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/verse"
+                className="flex items-center gap-2 text-sm font-medium hover:text-yellow-600"
+              >
+                <LogIn size={20} />
+                Login
+              </Link>
+            )}
+            <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <Search size={20} />
+            </button>
+          </div>
+
+          {/* Mobile Nav Toggle */}
+          <div className="md:hidden flex items-center space-x-4">
+            <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <Search size={22} />
+            </button>
+            <button onClick={() => setIsMobileOpen(true)}>
+              <Menu size={26} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Search Dropdown */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-[72px] w-full bg-gray-100 text-gray-900 p-4 flex flex-col items-center z-40"
+            exit={{ opacity: 0, y: -15 }}
+            className="fixed top-[64px] inset-x-0 bg-gray-100 z-40 px-4 py-4"
           >
-            <input
-              type="text"
-              placeholder="Search for items..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-3/4 p-2 rounded-md bg-white text-gray-900 border border-gray-300 focus:outline-none"
-            />
+            <div className="max-w-4xl mx-auto">
+              <input
+                type="text"
+                placeholder="Search books..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full px-3 py-2 rounded border focus:ring-2 focus:ring-yellow-500"
+              />
 
-            {suggestions.length > 0 && (
-              <ul className="w-3/4 bg-white border border-gray-300 mt-2 rounded shadow text-sm">
-                {suggestions.map((book) => (
-                  <li
-                    key={book.id}
-                    onClick={() => {
-                      setQuery('');
-                      setIsSearchOpen(false);
-                      navigate(`/read/${book.id}`);
-                    }}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                  >
-                    {book.title}
-                  </li>
-                ))}
-              </ul>
-            )}
+              {suggestions.length > 0 && (
+                <ul className="mt-2 bg-white border rounded shadow text-sm">
+                  {suggestions.map((book) => (
+                    <li
+                      key={book.id}
+                      onClick={() => {
+                        setQuery('');
+                        setIsSearchOpen(false);
+                        navigate(`/read/${book.id}`);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                    >
+                      {book.title}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 📱 Mobile Nav */}
+      {/* Mobile Nav Menu */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
-            key="mobileNav"
-            initial={{ opacity: 0, y: -60 }}
+            key="mobile-nav"
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            className="fixed inset-0 z-50 bg-gray-100 flex flex-col justify-center items-center px-6 space-y-6"
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-50 bg-white flex flex-col items-center pt-20 pb-10 space-y-6"
           >
             <button
-              className="absolute top-6 right-6 text-black"
               onClick={() => setIsMobileOpen(false)}
+              className="absolute top-6 right-6 text-gray-800"
             >
-              <FaTimes size={26} />
+              <FaTimes size={24} />
             </button>
 
             {navLinks.map((link) => (
@@ -185,7 +184,7 @@ export default function Navbar() {
                 key={link.name}
                 to={link.link}
                 onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-gray-600 transition"
+                className="flex items-center gap-3 text-lg font-semibold hover:text-yellow-600"
               >
                 {link.icon}
                 {link.name}
@@ -198,7 +197,7 @@ export default function Navbar() {
                   handleLogout();
                   setIsMobileOpen(false);
                 }}
-                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-red-600 transition"
+                className="flex items-center gap-3 text-lg font-semibold hover:text-red-600"
               >
                 <LogOut size={20} />
                 Logout
@@ -207,7 +206,7 @@ export default function Navbar() {
               <Link
                 to="/verse"
                 onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-2 text-lg font-semibold text-black hover:text-gray-600 transition"
+                className="flex items-center gap-3 text-lg font-semibold hover:text-yellow-600"
               >
                 <LogIn size={20} />
                 Login
