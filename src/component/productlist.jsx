@@ -1,11 +1,15 @@
+// pages/ProductList.jsx
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import api from "../../api/Instance";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../api/Instance";
+import { useBookStore } from "../store/useBookStore";
 
 export default function ProductList() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { subscriptionType } = useBookStore();
+  const navigate = useNavigate();
 
   const getImageUrl = (url) => {
     if (!url) return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
@@ -26,6 +30,14 @@ export default function ProductList() {
     }
     fetchBooks();
   }, []);
+
+  const handleReadClick = (bookId) => {
+    if (subscriptionType === "pending") {
+      navigate("/subscribe");
+    } else {
+      navigate(`/read/${bookId}`);
+    }
+  };
 
   if (loading) return <p className="text-center py-10">Loading books...</p>;
   if (error) return <p className="text-center text-red-600">{error}</p>;
@@ -49,11 +61,12 @@ export default function ProductList() {
               {book.language?.name && <p className="text-xs text-gray-500">Language: {book.language.name}</p>}
             </div>
             <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-              <Link to={`/read/${book._id || book.id}`}>
-                <button className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500">
-                  Read
-                </button>
-              </Link>
+              <button
+                onClick={() => handleReadClick(book._id || book.id)}
+                className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500"
+              >
+                Read
+              </button>
             </div>
           </div>
         ))}

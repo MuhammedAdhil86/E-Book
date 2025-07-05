@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Menu,
-  Search,
-  LogIn,
-  LogOut
-} from "lucide-react";
+import { Menu, Search, LogIn, LogOut } from "lucide-react";
 import { FaTimes } from "react-icons/fa";
-import {
-  BsBookmarkHeart,
-  BsBook
-} from "react-icons/bs";
+import { BsBookmarkHeart, BsBook } from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
 import { IoMdNotificationsOutline } from "react-icons/io";
-import {
-  MdOutlineSubscriptions,
-  MdOutlineSettings
-} from "react-icons/md";
+import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useBookStore } from '../../store/useBookStore';
+import { useBookStore } from '../store/useBookStore';
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -30,6 +19,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const isAuthenticated = useBookStore((s) => s.isAuthenticated);
   const logout = useBookStore((s) => s.logout);
+  const subscriptionType = useBookStore((s) => s.subscriptionType);
 
   const handleLogout = () => {
     logout();
@@ -41,7 +31,7 @@ export default function Navbar() {
     { name: "My E Books", icon: <BsBook size={20} />, link: "#" },
     { name: "Library", icon: <PiBooksFill size={20} />, link: "/library" },
     { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
-    { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "#" },
+    { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "/subscription" },
     { name: "Settings", icon: <MdOutlineSettings size={20} />, link: "#" },
   ];
 
@@ -69,14 +59,12 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Navigation Bar */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white text-black border-b shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-4">
           <div className="text-lg sm:text-xl font-bold tracking-wider">
             Motor Vehicle Law
           </div>
 
-          {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
@@ -110,7 +98,6 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Nav Toggle */}
           <div className="md:hidden flex items-center space-x-4">
             <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
               <Search size={22} />
@@ -122,7 +109,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Search Dropdown */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
@@ -148,7 +134,11 @@ export default function Navbar() {
                       onClick={() => {
                         setQuery('');
                         setIsSearchOpen(false);
-                        navigate(`/read/${book.id}`);
+                        if (subscriptionType === 'pending') {
+                          navigate('/subscribe');
+                        } else {
+                          navigate(`/read/${book.id}`);
+                        }
                       }}
                       className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                     >
@@ -162,7 +152,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Nav Menu */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div

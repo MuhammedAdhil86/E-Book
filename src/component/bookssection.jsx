@@ -4,7 +4,7 @@ import { Pagination } from "swiper/modules";
 import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
-import api from "../../api/Instance";
+import api from "../api/Instance";
 
 export default function BooksSection() {
   const [books, setBooks] = useState([]);

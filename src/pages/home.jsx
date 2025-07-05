@@ -1,8 +1,8 @@
 import React from "react";
-import Navbar from "../component/navbar/navbar";
-import Quotepart from "../component/quote-of -the-day/quotepart";
-import Footer from "../component/footer/footer";
-import BooksSection from "../component/bookssection/bookssection";
+import Navbar from "../component/navbar";
+import Quotepart from "../component/quotepart";
+import Footer from "../component/footer";
+import BooksSection from "../component/bookssection";
 
 const Home = () => {
   return (

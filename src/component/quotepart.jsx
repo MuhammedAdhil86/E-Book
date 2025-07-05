@@ -7,16 +7,16 @@ export default function Quotepart() {
         
         {/* Left Text Content */}
         <div className="text-center md:text-left space-y-4 flex-1">
-          <h1 className="text-4xl md:text-5xl font-serif font-semibold">NEW RELEASE</h1>
+          <h1 className="text-3xl md:text-5xl font-serif font-semibold">Motor Vehicle Law</h1>
           <h3 className="text-lg md:text-xl font-semibold text-gray-900">
-            USA TODAY <span className="text-yellow-500">BESTSELLING</span> AUTHOR
+            EXPLORE <span className="text-yellow-500">OUR E BOOK</span> LIBRARY
           </h3>
         </div>
 
         {/* Book Image */}
         <div className="flex-1 flex justify-center">
           <img
-            src="https://images-na.ssl-images-amazon.com/images/I/81l3rZK4lnL.jpg"
+            src="https://ebook.commerciallawpublishers.com/fa/mva/files/mobile/1.jpg?220607085837"
             alt="There's Something About Mira"
             className="w-48 md:w-60 shadow-md"
           />
@@ -25,10 +25,10 @@ export default function Quotepart() {
         {/* Right Author & Description */}
         <div className="text-center md:text-left space-y-4 flex-1">
           <h3 className="text-2xl font-cursive text-gray-800">Quote Of The Day</h3>
-          <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-md">
-            The heartfelt story of a woman determined to reunite a lost ring with its owner,
-            who ends up finding herself along the way.
-          </p>
+       <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-md">
+  The inspiring journey of an accident victim seeking rightful compensation,
+  who discovers their voice in the legal process along the way.
+</p>
           <button className="mt-2 bg-yellow-500 text-white px-4 py-2 text-sm rounded hover:bg-yellow-600 transition">
             Know More
           </button>
