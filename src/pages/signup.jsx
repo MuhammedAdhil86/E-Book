@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useBookStore } from "../store/useBookStore";
-import indianStates from "../component/data/indianstate";
+import indianStates from "../data/indianstate";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

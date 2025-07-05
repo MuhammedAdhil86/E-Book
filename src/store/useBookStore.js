@@ -1,5 +1,4 @@
 // store/useBookStore.js
-
 import { create } from "zustand";
 import Cookies from "js-cookie";
 import api from "../api/Instance";
@@ -16,7 +15,7 @@ export const useBookStore = create((set, get) => ({
 
   // Auth & Subscription State
   token: Cookies.get("token") || null,
-  user: null,
+  user: Cookies.get("user") ? JSON.parse(Cookies.get("user")) : null,
   mobile: "",
   isAuthenticated: !!Cookies.get("token"),
   subscriptionType: Cookies.get("subscription_type") || null,
@@ -40,7 +39,9 @@ export const useBookStore = create((set, get) => ({
 
   sendOtp: async (mobile) => {
     const formattedMobile = `+91${mobile.replace(/[^\d]/g, "").slice(-10)}`;
-    const res = await api.post("/user/reader/login", { mobile: formattedMobile });
+    const res = await api.post("/user/reader/login", {
+      mobile: formattedMobile,
+    });
     return res.data;
   },
 
@@ -58,6 +59,7 @@ export const useBookStore = create((set, get) => ({
       Cookies.set("token", token, { expires: 7 });
       Cookies.set("subscription_type", user.subscription_type, { expires: 7 });
       Cookies.set("has_subscription", user.has_subscription, { expires: 7 });
+      Cookies.set("user", JSON.stringify(user), { expires: 7 }); // ✅ Store user
 
       set({
         token,
@@ -67,7 +69,7 @@ export const useBookStore = create((set, get) => ({
         hasSubscription: user.has_subscription,
       });
 
-      // Redirect based on subscription status
+      // Redirect logic
       if (!user.has_subscription) return "/subscription";
       if (user.subscription_type === "trial") return "/subscription";
       if (user.subscription_type === "expired") return "/renew";
@@ -81,6 +83,8 @@ export const useBookStore = create((set, get) => ({
     Cookies.remove("token");
     Cookies.remove("subscription_type");
     Cookies.remove("has_subscription");
+    Cookies.remove("user"); // ✅ Remove user
+
     set({
       token: null,
       user: null,
@@ -106,6 +110,7 @@ export const useBookStore = create((set, get) => ({
     if (user) {
       Cookies.set("subscription_type", user.subscription_type, { expires: 7 });
       Cookies.set("has_subscription", user.has_subscription, { expires: 7 });
+      Cookies.set("user", JSON.stringify(user), { expires: 7 }); // ✅ Update stored user
       set({
         user,
         subscriptionType: user.subscription_type,

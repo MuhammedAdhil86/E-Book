@@ -11,6 +11,7 @@ import BooksContent from '../pages/Bookscontent';
 import Subscription from '../pages/subscription';
 import Subscribe from '../pages/subscribe';
 import Renew from '../pages/renew';
+import Invoice from '../pages/invoice';
 
 // Route guard
 import ProtectedRoute from './ProtectedRoute';
@@ -24,6 +25,7 @@ export default function AppRouter() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/subscribe" element={<Subscribe />} />
+      <Route path="/invoice" element={<Invoice />} />
 
       {/* Protected Routes */}
       <Route
@@ -49,7 +51,7 @@ export default function AppRouter() {
         path="/subscription"
         element={
           <ProtectedRoute
-            redirectToIfUnauthenticated="/signup"
+            redirectToIfUnauthenticated="/verse"
             requireSubscription={false}
           >
             <Subscription />

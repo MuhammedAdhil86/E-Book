@@ -1,37 +1,60 @@
-// pages/subscription.jsx
-
+// pages/Subscription.jsx
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import Navbar from "../component/navbar";
 import { useBookStore } from "../store/useBookStore";
-import api from "../api/Instance";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { containerFadeIn, planCardVariant } from "../animations/subscriptionVariants";
+import Footer from "../component/footer";
 
 export default function Subscription() {
   const [billing] = useState("monthly");
-  const { user, subscriptionType, updateSubscriptionState } = useBookStore();
+  const {
+    user,
+    subscriptionType,
+    updateSubscriptionState,
+  } = useBookStore();
+  const navigate = useNavigate();
 
-  const plans = {
-    monthly: [
-      {
-        name: "1 Month Plan",
-        price: 299,
-        features: ["Access to all features", "1 month validity", "Email support"],
-        duration: 1,
-      },
-      {
-        name: "3 Month Plan",
-        price: 499,
-        features: ["Access to all features", "3 months validity", "Priority support"],
-        duration: 3,
-      },
-      {
-        name: "12 Month Plan",
-        price: 799,
-        features: ["Access to all features", "1 year validity", "Premium support"],
-        duration: 12,
-      },
-    ],
-  };
+ const plans = {
+  monthly: [
+    {
+      name: "1 Year",
+      price: 299,
+      features: [
+        "Unlimited access to legal eBooks",
+        "Access latest case law archives",
+        "Basic reading tools (highlight, search)",
+        "Standard email support",
+      ],
+      duration: 1,
+    },
+    {
+      name: "2 Year",
+      price: 499,
+      features: [
+        "Unlimited access to legal eBooks",
+        "Download PDFs for offline reading",
+        "Advanced search & bookmark system",
+        "Priority email support",
+      ],
+      duration: 3,
+    },
+    {
+      name: "3 Year",
+      price: 799,
+      features: [
+        "Unlimited access to legal eBooks",
+        "Full access to premium journals & digests",
+        "Offline mode & cross-device sync",
+        "Premium chat & email support",
+      ],
+      duration: 12,
+    },
+  ],
+};
+
 
   const handleRazorpay = async (plan) => {
     if (!user) {
@@ -46,25 +69,21 @@ export default function Subscription() {
       name: "Motor Law App",
       description: plan.name,
       image: "/logo.png",
-      handler: async function (response) {
-        try {
-          const res = await api.post("/user/reader/subscribe", {
-            payment_id: response.razorpay_payment_id,
-            plan_name: plan.name,
-            duration: plan.duration,
-          });
+      handler: function (response) {
+        toast.success("✅ Payment successful!");
+        updateSubscriptionState({
+          ...user,
+          has_subscription: true,
+          subscription_type: plan.name,
+        });
 
-          const updatedUser = res.data?.user;
-          updateSubscriptionState(updatedUser);
-
-          toast.success("✅ Subscription successful! Redirecting...");
-          setTimeout(() => {
-            window.location.href = "/subscribed";
-          }, 1500);
-        } catch (err) {
-          console.error("Subscription update failed:", err);
-          toast.error("❌ Payment success, but subscription update failed.");
-        }
+        navigate("/invoice", {
+          state: {
+            payment: response,
+            plan,
+            user,
+          },
+        });
       },
       prefill: {
         name: user?.first_name || "User",
@@ -85,7 +104,12 @@ export default function Subscription() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-white px-4 py-12 text-black mt-5">
+      <motion.div
+        className="min-h-screen bg-white px-4 py-12 text-black mt-5"
+        {...containerFadeIn}
+        initial="initial"
+        animate="animate"
+      >
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-2">Choose your plan</h2>
           <p className="text-green-600 font-medium mb-1">
@@ -111,17 +135,19 @@ export default function Subscription() {
                 plan.name.toLowerCase().includes(subscriptionType.toLowerCase());
 
               return (
-                <div
+                <motion.div
                   key={idx}
                   className={`border rounded-2xl p-6 shadow-sm transition bg-white ${
                     isCurrentPlan
                       ? "border-yellow-400 shadow-md"
                       : "border-gray-200 hover:shadow-md"
                   }`}
+                  {...planCardVariant(idx)}
+                  initial="initial"
+                  animate="animate"
+                  whileHover="whileHover"
                 >
-                  <h3 className="text-lg font-semibold mb-2 text-black">
-                    {plan.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold mb-2 text-black">{plan.name}</h3>
                   <p className="text-3xl font-bold mb-1">₹{plan.price}</p>
                   <p className="text-sm text-gray-500 mb-4">/ selected plan</p>
                   <ul className="text-sm text-gray-700 space-y-2 mb-6">
@@ -142,12 +168,13 @@ export default function Subscription() {
                   >
                     {isCurrentPlan ? "Active Plan" : "Get Plan"}
                   </button>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
-      </div>
+      </motion.div>
+      <Footer/>
     </>
   );
 }

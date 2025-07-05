@@ -1,9 +1,9 @@
+// api/Instance.js
 import axios from "axios";
 import Cookies from "js-cookie";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://mvdapi-mxjdw.ondigitalocean.app/api";
+  import.meta.env.VITE_API_BASE_URL || "https://mvdapi-mxjdw.ondigitalocean.app/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
