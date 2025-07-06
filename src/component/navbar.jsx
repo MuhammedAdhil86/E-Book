@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, LogIn, LogOut } from "lucide-react";
+import { Menu, Search, LogIn, LogOut, HomeIcon } from "lucide-react";
 import { FaTimes } from "react-icons/fa";
-import { BsBookmarkHeart, BsBook } from "react-icons/bs";
+import {  BsBook } from "react-icons/bs";
 import { PiBooksFill } from "react-icons/pi";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
@@ -27,12 +27,12 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "My BookMarks", icon: <BsBookmarkHeart size={20} />, link: "#" },
+    { name: "HOME", icon: <HomeIcon size={20} />, link: "/" },
     { name: "My E Books", icon: <BsBook size={20} />, link: "#" },
     { name: "Library", icon: <PiBooksFill size={20} />, link: "/library" },
     { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
     { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "/subscription" },
-    { name: "Settings", icon: <MdOutlineSettings size={20} />, link: "#" },
+
   ];
 
   useEffect(() => {

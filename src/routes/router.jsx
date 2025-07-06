@@ -15,6 +15,7 @@ import Invoice from '../pages/invoice';
 
 // Route guard
 import ProtectedRoute from './ProtectedRoute';
+import QuotesPage from '../pages/quotespage';
 
 export default function AppRouter() {
   return (
@@ -26,6 +27,7 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/invoice" element={<Invoice />} />
+      <Route path="/quotes" element={<QuotesPage/>} />
 
       {/* Protected Routes */}
       <Route

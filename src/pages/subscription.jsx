@@ -6,7 +6,6 @@ import { useBookStore } from "../store/useBookStore";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { containerFadeIn, planCardVariant } from "../animations/subscriptionVariants";
-import Footer from "../component/footer";
 
 export default function Subscription() {
   const [billing] = useState("monthly");
@@ -20,7 +19,7 @@ export default function Subscription() {
  const plans = {
   monthly: [
     {
-      name: "1 Year",
+      name: "Reader One",
       price: 299,
       features: [
         "Unlimited access to legal eBooks",
@@ -31,7 +30,7 @@ export default function Subscription() {
       duration: 1,
     },
     {
-      name: "2 Year",
+      name: "Reader Plus",
       price: 499,
       features: [
         "Unlimited access to legal eBooks",
@@ -42,7 +41,7 @@ export default function Subscription() {
       duration: 3,
     },
     {
-      name: "3 Year",
+      name: "Reader Pro",
       price: 799,
       features: [
         "Unlimited access to legal eBooks",
@@ -174,7 +173,6 @@ export default function Subscription() {
           </div>
         </div>
       </motion.div>
-      <Footer/>
     </>
   );
 }
