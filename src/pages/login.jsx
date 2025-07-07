@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useBookStore } from "../store/useBookStore";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNotificationStore } from "../store/useToastStore"; // ✅ Zustand store
 
 export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
@@ -11,6 +12,7 @@ export default function Login() {
   const setMobile = useBookStore((s) => s.setMobile);
   const sendOtp = useBookStore((s) => s.sendOtp);
   const verifyOtp = useBookStore((s) => s.verifyOtp);
+  const setNotification = useNotificationStore((s) => s.setNotification); // ✅
   const navigate = useNavigate();
 
   const handleSendOtp = async () => {
@@ -26,7 +28,7 @@ export default function Login() {
   const handleVerifyOtp = async () => {
     try {
       await verifyOtp(mobile, otp);
-      toast.success("Login successful");
+      setNotification("Login successful", "success"); // ✅ triggers toast in Home
       navigate("/");
     } catch (e) {
       toast.error("Invalid OTP");

@@ -1,6 +1,6 @@
-import React from 'react';
-import AppRouter from './routes/router';
-import { Toaster } from 'react-hot-toast'; // ✅ Import toast provider
+import React from "react";
+import AppRouter from "./routes/router";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
