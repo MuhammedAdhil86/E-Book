@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Search, LogIn, LogOut, HomeIcon } from "lucide-react";
-import { FaTimes } from "react-icons/fa";
-import {  BsBook } from "react-icons/bs";
-import { PiBooksFill } from "react-icons/pi";
-import { IoMdNotificationsOutline } from "react-icons/io";
-import { MdOutlineSubscriptions, MdOutlineSettings } from "react-icons/md";
+import { FaTimes } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useBookStore } from '../store/useBookStore';
+import { Icon } from '@iconify/react';
+import { mobileMenuVariants, searchBarVariants } from '../animations/navbarAnimation';
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -27,12 +24,11 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "HOME", icon: <HomeIcon size={20} />, link: "/" },
-    { name: "My E Books", icon: <BsBook size={20} />, link: "#" },
-    { name: "Library", icon: <PiBooksFill size={20} />, link: "/library" },
-    { name: "Notification", icon: <IoMdNotificationsOutline size={20} />, link: "#" },
-    { name: "Subscription", icon: <MdOutlineSubscriptions size={20} />, link: "/subscription" },
-
+    { name: 'HOME', icon: <Icon icon="solar:home-linear" className="text-xl" />, link: '/' },
+    { name: 'My E Books', icon: <Icon icon="solar:book-linear" className="text-xl" />, link: '#' },
+    { name: 'Library', icon: <Icon icon="material-symbols:library-books-outline" className="text-xl" />, link: '/library' },
+    { name: 'Notification', icon: <Icon icon="solar:bell-outline" className="text-xl" />, link: '#' },
+    { name: 'Subscription', icon: <Icon icon="mdi:wallet-membership" className="text-xl" />, link: '/subscription' },
   ];
 
   useEffect(() => {
@@ -43,14 +39,14 @@ export default function Navbar() {
 
     const timeout = setTimeout(async () => {
       try {
-        const res = await axios.get("https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers");
+        const res = await axios.get('https://mvdapi-mxjdw.ondigitalocean.app/api/ebook/covers');
         const books = res.data.responsedata || [];
         const filtered = books.filter((book) =>
           book.title.toLowerCase().includes(query.toLowerCase())
         );
         setSuggestions(filtered.slice(0, 5));
       } catch (err) {
-        console.error("Search Error:", err);
+        console.error('Search Error:', err);
       }
     }, 300);
 
@@ -76,12 +72,13 @@ export default function Navbar() {
                 {link.name}
               </Link>
             ))}
+
             {isAuthenticated ? (
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-sm font-medium hover:text-red-600"
               >
-                <LogOut size={20} />
+                <Icon icon="solar:logout-outline" className="text-xl" />
                 Logout
               </button>
             ) : (
@@ -89,32 +86,35 @@ export default function Navbar() {
                 to="/verse"
                 className="flex items-center gap-2 text-sm font-medium hover:text-yellow-600"
               >
-                <LogIn size={20} />
+                <Icon icon="solar:login-outline" className="text-xl" />
                 Login
               </Link>
             )}
+
             <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
-              <Search size={20} />
+              <Icon icon="solar:magnifer-linear" className="text-lg" />
             </button>
           </div>
 
           <div className="md:hidden flex items-center space-x-4">
             <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
-              <Search size={22} />
+              <Icon icon="solar:magnifer-linear" className="text-2xl" />
             </button>
             <button onClick={() => setIsMobileOpen(true)}>
-              <Menu size={26} />
+              <Icon icon="solar:hamburger-menu-linear" className="text-2xl" />
             </button>
           </div>
         </div>
       </nav>
 
+      {/* Search Bar */}
       <AnimatePresence>
         {isSearchOpen && !isMobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={searchBarVariants}
             className="fixed top-[64px] inset-x-0 bg-gray-100 z-40 px-4 py-4"
           >
             <div className="max-w-4xl mx-auto">
@@ -125,7 +125,6 @@ export default function Navbar() {
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full px-3 py-2 rounded border focus:ring-2 focus:ring-yellow-500"
               />
-
               {suggestions.length > 0 && (
                 <ul className="mt-2 bg-white border rounded shadow text-sm">
                   {suggestions.map((book) => (
@@ -152,14 +151,17 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
             key="mobile-nav"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-50 bg-white flex flex-col items-center pt-20 pb-10 space-y-6"
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={mobileMenuVariants}
+            transition={mobileMenuVariants.transition}
+            className="fixed inset-0 z-50 bg-white px-6 pt-20 pb-10 overflow-y-auto"
           >
             <button
               onClick={() => setIsMobileOpen(false)}
@@ -168,39 +170,45 @@ export default function Navbar() {
               <FaTimes size={24} />
             </button>
 
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.link}
-                onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-3 text-lg font-semibold hover:text-yellow-600"
-              >
-                {link.icon}
-                {link.name}
-              </Link>
-            ))}
+            <div className="flex flex-col gap-3 items-start pt-4">
+              <div className="text-lg font-bold text-gray-800 pb-4 border-b w-full text-center">
+                Motor Vehicle Law
+              </div>
 
-            {isAuthenticated ? (
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMobileOpen(false);
-                }}
-                className="flex items-center gap-3 text-lg font-semibold hover:text-red-600"
-              >
-                <LogOut size={20} />
-                Logout
-              </button>
-            ) : (
-              <Link
-                to="/verse"
-                onClick={() => setIsMobileOpen(false)}
-                className="flex items-center gap-3 text-lg font-semibold hover:text-yellow-600"
-              >
-                <LogIn size={20} />
-                Login
-              </Link>
-            )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.link}
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-4 text-base py-2 border-b w-full"
+                >
+                  {link.icon}
+                  {link.name}
+                </Link>
+              ))}
+
+              {isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileOpen(false);
+                  }}
+                  className="flex items-center gap-4 text-base py-2 w-full hover:text-red-600"
+                >
+                  <Icon icon="solar:logout-outline" className="text-xl" />
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/verse"
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center gap-4 text-base py-2 w-full hover:text-yellow-600"
+                >
+                  <Icon icon="solar:login-outline" className="text-xl" />
+                  Login
+                </Link>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

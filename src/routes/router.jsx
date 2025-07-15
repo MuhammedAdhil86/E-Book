@@ -16,6 +16,7 @@ import Invoice from '../pages/invoice';
 // Route guard
 import ProtectedRoute from './ProtectedRoute';
 import QuotesPage from '../pages/quotespage';
+import ViewBook from '../pages/viewbook';
 
 export default function AppRouter() {
   return (
@@ -67,6 +68,15 @@ export default function AppRouter() {
         element={
           <ProtectedRoute>
             <Subscribe />
+          </ProtectedRoute>
+        }
+      />
+
+           <Route
+        path="/view"
+        element={
+          <ProtectedRoute>
+            <ViewBook />
           </ProtectedRoute>
         }
       />

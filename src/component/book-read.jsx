@@ -1,6 +1,8 @@
+
+
+
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import html2pdf from "html2pdf.js";
 import {
   FaChevronDown,
   FaChevronRight,
@@ -12,6 +14,8 @@ import {
   FaFilePdf,
 } from "react-icons/fa";
 import api from "../api/Instance";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function BookReader() {
   const { id: bookId } = useParams();
@@ -24,6 +28,133 @@ export default function BookReader() {
   const [popupData, setPopupData] = useState(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const contentRef = useRef();
+ const downloadFullBookPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      
+      // Add cover page
+      doc.addImage(bookInfo?.responsedata?.cover_image || "/bookimage.jpg", 'JPEG', 15, 40, 180, 180);
+      doc.setFontSize(28);
+      doc.setFont("helvetica", "bold");
+      doc.text(bookInfo?.responsedata?.title || "Untitled Book", 105, 30, { align: 'center' });
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "normal");
+      doc.text(`by ${bookInfo?.responsedata?.author || "Unknown Author"}`, 105, 230, { align: 'center' });
+      
+      // Add index page
+      doc.addPage();
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("Table of Contents", 105, 20, { align: 'center' });
+      doc.setFontSize(12);
+      
+      let y = 40;
+      const addIndexEntry = (node, indent = 0) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        
+        const text = `${node.numbering ? node.numbering + ' ' : ''}${node.header || node.title || ''}`;
+        doc.text(' '.repeat(indent * 4) + text, 20, y);
+        y += 7;
+        
+        if (node.children) {
+          node.children.forEach(child => addIndexEntry(child, indent + 1));
+        }
+      };
+      
+      chapters.forEach(chapter => {
+        addIndexEntry(chapter);
+        if (chapter.children) {
+          chapter.children.forEach(child => addIndexEntry(child, 1));
+        }
+      });
+      
+      // Add content pages with proper formatting
+      const addContentPage = (node) => {
+        // Start a new page for each node
+        let currentPage = doc;
+        let pageStarted = false;
+        let yPosition = 20;
+        
+        const addToPDF = (text, fontSize = 10, isBold = false, isItalic = false) => {
+          if (!pageStarted) {
+            currentPage.addPage();
+            currentPage.setFontSize(16);
+            currentPage.setFont("helvetica", "bold");
+            
+            // Chapter title
+            const title = `${node.numbering ? node.numbering + ' ' : ''}${node.header || node.title || ''}`;
+            const titleLines = currentPage.splitTextToSize(title, 180);
+            titleLines.forEach((line, i) => {
+              currentPage.text(line, 20, yPosition + (i * 7));
+            });
+            yPosition += titleLines.length * 7 + 5;
+            
+            // Subtitle if exists
+            if (node.title && node.header) {
+              currentPage.setFontSize(12);
+              currentPage.setFont("helvetica", "italic");
+              currentPage.text(node.title, 20, yPosition);
+              yPosition += 7;
+            }
+            
+            currentPage.setFontSize(fontSize);
+            currentPage.setFont("helvetica", isBold ? "bold" : isItalic ? "italic" : "normal");
+            pageStarted = true;
+          }
+          
+          const lines = currentPage.splitTextToSize(text, 180);
+          for (const line of lines) {
+            if (yPosition > 270) {
+              currentPage.addPage();
+              yPosition = 20;
+            }
+            currentPage.text(line, 20, yPosition);
+            yPosition += 7;
+          }
+        };
+        
+        if (node.draft_content || node.verified_content) {
+          const content = node.draft_content || node.verified_content;
+          const temp = document.createElement("div");
+          temp.innerHTML = content;
+          const plainText = temp.innerText.replace(/\s+/g, " ").trim();
+          addToPDF(plainText);
+        } else {
+          addToPDF("No content available");
+        }
+        
+        // Add border to each page
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.rect(10, 10, 190, 277);
+        }
+        
+        // Recursively add child content
+        if (node.children) {
+          node.children.forEach(child => addContentPage(child));
+        }
+      };
+      
+      // Add all content pages
+      chapters.forEach(chapter => {
+        addContentPage(chapter);
+        if (chapter.children) {
+          chapter.children.forEach(child => addContentPage(child));
+        }
+      });
+      
+      doc.save(`${bookInfo?.responsedata?.title || "book"}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,38 +225,30 @@ export default function BookReader() {
     </ul>
   );
 
+
   const cleanHTML = (rawHTML) => {
     if (!rawHTML) return "";
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(rawHTML, "text/html");
-    const allowedTags = ["B", "I", "EM", "STRONG", "P", "BR", "UL", "OL", "LI", "SPAN"];
-
-    const walk = (node) => {
-      const childNodes = Array.from(node.childNodes);
-      childNodes.forEach((child) => {
-        if (child.nodeType === 1) {
-          if (!allowedTags.includes(child.tagName)) {
-            const fragment = document.createDocumentFragment();
-            while (child.firstChild) {
-              fragment.appendChild(child.firstChild);
+    const doc = new DOMParser().parseFromString(rawHTML, "text/html");
+    const walk = (n) => {
+      Array.from(n.childNodes).forEach((c) => {
+        if (c.nodeType === 1) {
+          for (const attr of Array.from(c.attributes)) {
+            const name = attr.name.toLowerCase();
+            if (
+              name.startsWith("on") ||
+              (["href", "src", "action"].includes(name) &&
+                /^(javascript:|data:)/i.test(attr.value))
+            ) {
+              c.removeAttribute(attr.name);
             }
-            child.replaceWith(fragment);
-          } else {
-            if (child.tagName !== "A") {
-              const attributes = Array.from(child.attributes);
-              attributes.forEach(attr => {
-                child.removeAttribute(attr.name);
-              });
-            }
-            walk(child);
           }
+          walk(c);
         }
       });
     };
-
     walk(doc.body);
     return doc.body.innerHTML;
-  };
+  }; 
 
   const parseDraftContent = (html) => {
     if (!html) return null;
@@ -175,20 +298,19 @@ export default function BookReader() {
 
   const renderA4Pages = () => {
     if (!selectedTopic?.draft_content) return null;
-    
-    // Calculate approximate number of A4 pages needed based on content length
+
     const contentLength = selectedTopic.draft_content.length;
-    const charsPerPage = 3000; // Approximate characters per A4 page
+    const charsPerPage = 3000;
     const pageCount = Math.max(1, Math.ceil(contentLength / charsPerPage));
-    
+
     return (
       <div className="space-y-4">
         {Array.from({ length: pageCount }).map((_, pageIndex) => (
-          <div 
+          <div
             key={pageIndex}
             className="bg-white shadow-lg p-8 mx-auto border border-gray-300"
-            style={{ 
-              width: "210mm", 
+            style={{
+              width: "210mm",
               minHeight: "297mm",
               pageBreakAfter: pageIndex < pageCount - 1 ? "always" : "auto"
             }}
@@ -203,7 +325,7 @@ export default function BookReader() {
                 )}
               </>
             )}
-            
+
             <div className="text-gray-900 text-justify leading-relaxed">
               {pageIndex === 0 ? (
                 parseDraftContent(selectedTopic.draft_content)
@@ -211,7 +333,7 @@ export default function BookReader() {
                 <div dangerouslySetInnerHTML={{ __html: cleanHTML(selectedTopic.draft_content) }} />
               )}
             </div>
-            
+
             {pageIndex < pageCount - 1 && (
               <div className="mt-4 text-center text-sm text-gray-500">
                 Continued on next page...
@@ -221,181 +343,6 @@ export default function BookReader() {
         ))}
       </div>
     );
-  };
-
-  const downloadFullBookPDF = async () => {
-    setIsGeneratingPDF(true);
-    
-    try {
-      // Create a container for the PDF content
-      const element = document.createElement("div");
-      element.id = "pdf-export-container";
-      element.style.width = "210mm";
-      element.style.margin = "0 auto";
-      element.style.padding = "0";
-      element.style.fontFamily = "'Georgia', serif";
-      element.style.fontSize = "12pt";
-      element.style.lineHeight = "1.6";
-      element.style.color = "#333";
-
-      // Add cover page with perfect spacing
-      const coverPage = document.createElement("div");
-      coverPage.style.pageBreakAfter = "always";
-      coverPage.style.height = "297mm";
-      coverPage.style.display = "flex";
-      coverPage.style.flexDirection = "column";
-      coverPage.style.justifyContent = "center";
-      coverPage.style.alignItems = "center";
-      coverPage.style.padding = "20mm";
-      coverPage.style.textAlign = "center";
-      coverPage.innerHTML = `
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-          <h1 style="font-size: 28pt; font-weight: bold; margin-bottom: 15pt; line-height: 1.3;">
-            ${bookInfo?.responsedata?.title || "Book Title"}
-          </h1>
-          <h2 style="font-size: 18pt; margin-bottom: 30pt; color: #555;">
-            ${bookInfo?.responsedata?.author || "Author"}
-          </h2>
-        </div>
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
-          <img src="${bookInfo?.responsedata?.cover_image || "/bookimage.jpg"}" 
-               style="max-width: 60%; max-height: 60%; object-fit: contain;" 
-               onerror="this.src='/bookimage.jpg'"
-               alt="Book Cover" />
-        </div>
-      `;
-      element.appendChild(coverPage);
-
-      // Add table of contents with professional spacing
-      const tocPage = document.createElement("div");
-      tocPage.style.pageBreakAfter = "always";
-      tocPage.style.padding = "25mm";
-      tocPage.innerHTML = `
-        <h2 style="font-size: 20pt; text-align: center; margin-bottom: 15mm; border-bottom: 1px solid #ddd; padding-bottom: 5mm;">
-          Table of Contents
-        </h2>
-        <div style="column-count: 2; column-gap: 20mm; column-fill: auto;">
-          ${generateTOC(chapters)}
-        </div>
-      `;
-      element.appendChild(tocPage);
-
-      // Add all chapters and sections with perfect typography
-      chapters.forEach((chapter) => {
-        const chapterDiv = document.createElement("div");
-        chapterDiv.style.pageBreakBefore = "always";
-        chapterDiv.style.padding = "20mm 25mm 15mm";
-        
-        chapterDiv.innerHTML = `
-          <h2 style="font-size: 22pt; font-weight: bold; 
-              margin-bottom: 10mm; border-bottom: 1px solid #eee; 
-              padding-bottom: 5mm;">
-            ${chapter.numbering}. ${chapter.title}
-          </h2>
-        `;
-        element.appendChild(chapterDiv);
-
-        if (chapter.children && chapter.children.length > 0) {
-          chapter.children.forEach((topic) => {
-            const topicDiv = document.createElement("div");
-            topicDiv.className = "topic-content";
-            topicDiv.style.marginBottom = "8mm";
-            topicDiv.style.pageBreakInside = "avoid";
-            
-            topicDiv.innerHTML = `
-              <h3 style="font-size: 16pt; font-weight: bold; 
-                  margin-bottom: 4mm; color: #444;">
-                ${topic.numbering}. ${topic.header}
-              </h3>
-              ${topic.title ? `
-                <div style="font-style: italic; margin-bottom: 4mm; color: #666;">
-                  ${topic.title}
-                </div>
-              ` : ''}
-              <div style="text-align: justify; text-indent: 1.5em; line-height: 1.6;">
-                ${cleanHTML(topic.draft_content || "")}
-              </div>
-            `;
-            
-            element.appendChild(topicDiv);
-          });
-        }
-      });
-
-      // Append to body temporarily
-      document.body.appendChild(element);
-
-      // Generate PDF with optimized settings
-      const opt = {
-        margin: [15, 15, 15, 15], // T, R, B, L margins
-        filename: `${bookInfo?.responsedata?.title || 'ebook'}.pdf`.replace(/[^a-z0-9]/gi, '_'),
-        image: { 
-          type: 'jpeg', 
-          quality: 0.98 
-        },
-        html2canvas: { 
-          scale: 2,
-          letterRendering: true,
-          useCORS: true,
-          allowTaint: false,
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          ignoreElements: (element) => {
-            return element.classList?.contains('avoid-render');
-          }
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          hotfixes: ["px_scaling"]
-        },
-        pagebreak: { 
-          mode: ['css', 'avoid-all'],
-          avoid: ['.topic-content', 'img', 'h2', 'h3']
-        }
-      };
-
-      // Small delay to ensure all elements are ready
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const worker = html2pdf().set(opt).from(element);
-      await worker.save();
-      
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try again.");
-    } finally {
-      // Clean up
-      const element = document.getElementById("pdf-export-container");
-      if (element) {
-        document.body.removeChild(element);
-      }
-      setIsGeneratingPDF(false);
-    }
-  };
-
-  const generateTOC = (nodes) => {
-    let tocHTML = "";
-    nodes.forEach((node) => {
-      tocHTML += `
-        <div style="margin-bottom: 6pt; font-weight: bold; page-break-inside: avoid;">
-          ${node.numbering}. ${node.title}
-        </div>
-      `;
-      
-      if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          tocHTML += `
-            <div style="margin-left: 10pt; margin-bottom: 4pt; page-break-inside: avoid;">
-              ${child.numbering}. ${child.header}
-            </div>
-          `;
-        });
-      }
-    });
-    return tocHTML;
   };
 
   return (
@@ -449,9 +396,9 @@ export default function BookReader() {
                   {isFullscreen ? <FaCompress /> : <FaExpand />}
                 </button>
                 <button 
-                  onClick={downloadFullBookPDF} 
                   className="p-2 hover:bg-gray-200 rounded flex items-center gap-1" 
                   title="Download PDF"
+                  onClick={downloadFullBookPDF}
                   disabled={isGeneratingPDF}
                 >
                   <FaFilePdf />
@@ -503,3 +450,8 @@ export default function BookReader() {
     </div>
   );
 }
+
+
+
+
+
