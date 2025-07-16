@@ -6,12 +6,12 @@ export default function NewRelease() {
     <div className="bg-[#fcf6f1] min-h-screen flex flex-col items-center px-6 font-serif pb-6">
       
       {/* Title */}
-      <h1 className="mt-16 mb-8 text-[48px] md:text-[64px] lg:text-[84px] font-light leading-none tracking-wide font-serifTitle text-center md:text-left">
+      <h1 className="mt-16 text-[48px] md:text-[64px] lg:text-[84px] font-light leading-none tracking-wide font-serifTitle text-center md:text-left">
         NEW RELEASE
       </h1>
 
       {/* Bottom Section */}
-      <div className="mt-4 md:mt-6 w-full max-w-7xl flex flex-col md:flex-row justify-between items-center md:items-end gap-8 md:gap-0">
+      <div className=" md:mt-6 w-full max-w-7xl flex flex-col md:flex-row justify-between items-center md:items-end gap-8 md:gap-0">
         
         {/* LEFT: Text */}
         <div className="w-full md:w-1/3 text-center md:text-left">
