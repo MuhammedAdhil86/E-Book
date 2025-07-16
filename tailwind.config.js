@@ -8,6 +8,9 @@ export default {
     extend: {
       fontFamily: {
         cursive: ['"Dancing Script"', 'cursive'],
+        serifTitle: ['"Playfair Display"', 'serif'],
+          signature: ['"Great Vibes"', 'cursive'],
+             body: ['Inter', 'sans-serif'],
       },
       animation: {
         'spin-slow': 'spin 10s linear infinite',
