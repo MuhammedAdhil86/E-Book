@@ -3,10 +3,10 @@ import React from "react";
 
 export default function AboutSection() {
   return (
-    <section className="flex flex-col md:flex-row font-serif items-stretch ">
+    <section className="flex flex-col md:flex-row font-serif items-stretch lg:mt-0 mt-7 ">
       
       {/* Left Content - 60% width */}
-      <div className="md:w-[60%] px-6 lg:px-24 py-12 flex flex-col justify-center bg-[#fdf6f1] h-[420px] lg:mt-0 mt-7">
+      <div className="md:w-[70%] px-6 lg:px-24 py-12 flex flex-col justify-center bg-[#fdf6f1] h-[420px] lg:mt-10 ">
         <p className="italic text-sm text-gray-600 mb-2">About Me</p>
 
         <h2 className="text-2xl md:text-4xl font-serifTitle text-black leading-snug mb-4">
@@ -30,7 +30,7 @@ export default function AboutSection() {
       </div>
 
       {/* Right Image - 40% width */}
-      <div className="md:w-[40%] h-[500px]">
+      <div className="md:w-[40%] h-[500px] ">
         <img
           src="https://sonalidev.com/wp-content/uploads/2024/12/Sonali-Dev-e1733491614810-808x1024.jpg"
           alt="Author"
