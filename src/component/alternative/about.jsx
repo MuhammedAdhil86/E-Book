@@ -3,10 +3,10 @@ import React from "react";
 
 export default function AboutSection() {
   return (
-    <section className="flex flex-col md:flex-row font-serif items-stretch py-5">
+    <section className="flex flex-col md:flex-row font-serif items-stretch ">
       
       {/* Left Content - 60% width */}
-      <div className="md:w-[60%] px-6 lg:px-24 py-12 flex flex-col justify-center bg-[#fdf6f1] h-[420px] mt-10">
+      <div className="md:w-[60%] px-6 lg:px-24 py-12 flex flex-col justify-center bg-[#fdf6f1] h-[420px] lg:mt-0 mt-7">
         <p className="italic text-sm text-gray-600 mb-2">About Me</p>
 
         <h2 className="text-2xl md:text-4xl font-serifTitle text-black leading-snug mb-4">

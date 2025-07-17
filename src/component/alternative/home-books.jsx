@@ -25,10 +25,10 @@ const books = [
 
 export default function BooksSection() {
   return (
-    <section className="bg-white min-h-screen px-6 lg:px-24 font-serif flex flex-col justify-center py-4">
+    <section className="bg-white lg:min-h-screen px-6 lg:px-24 font-serif flex flex-col justify-center lg:mt-0 mt-7">
       {/* Top Section */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mt-10">
-        <div className="mb-6 lg:mb-0">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center ">
+        <div className="mb-2 lg:mb-0">
           <p className="text-sm italic text-gray-700 mb-1">Books</p>
           <h2 className="text-[15px] md:text-4xl font-serifTitle max-w-2xl leading-snug text-black">
             DISCOVER ALL MY BOOKS YOU WERE LOOKING FOR
@@ -46,7 +46,7 @@ export default function BooksSection() {
       </div>
 
       {/* Navigation Arrows */}
-      <div className="flex justify-end mb-5 gap-3 pr-4">
+      <div className="flex justify-end mb-2 gap-3 pr-4">
         <button className="p-2 border border-gray-300 rounded-full hover:bg-gray-100 transition">
           <ChevronLeft size={18} />
         </button>
@@ -66,7 +66,7 @@ export default function BooksSection() {
                   <img
                     src={book.image}
                     alt={book.title}
-                    className="w-[180px] h-[260px] object-cover rounded shadow-md"
+                    className="w-[180px] h-[260px] object-cover rounded shadow-md  bg-red-500"
                   />
                 </div>
                 <p className="mt-3 text-sm text-black font-medium leading-tight max-w-[200px]">

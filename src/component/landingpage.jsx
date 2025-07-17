@@ -3,7 +3,8 @@ import React from "react";
 
 export default function NewRelease() {
   return (
-    <div className="bg-[#fcf6f1] min-h-screen flex flex-col items-center px-6 font-serif pb-6">
+<div className="bg-[#fcf6f1] lg:min-h-screen flex flex-col items-center px-6 font-serif pb-6">
+
       
       {/* Title */}
       <h1 className="mt-16 text-[48px] md:text-[64px] lg:text-[84px] font-light leading-none tracking-wide font-serifTitle text-center md:text-left">
@@ -43,7 +44,7 @@ export default function NewRelease() {
         </div>
 
         {/* RIGHT: Description & Button */}
-        <div className="w-full md:w-1/3 text-center md:text-left flex flex-col items-center md:items-start mt-6 md:mt-0">
+        <div className="w-full md:w-1/3 text-center md:text-left flex flex-col items-center md:items-start  md:mt-0">
           <p className="text-[14px] md:text-[15px] leading-relaxed text-black w-full md:w-[260px]">
             The heartfelt story of a woman determined to reunite a lost ring with its
             owner, who ends up finding herself along the way.
