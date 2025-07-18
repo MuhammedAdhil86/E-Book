@@ -16,9 +16,11 @@ export default function NewRelease() {
         
         {/* LEFT: Text */}
         <div className="w-full md:w-1/3 text-center md:text-left">
-          <p className="text-[18px] md:text-[26px] text-black leading-snug">USA Today</p>
+          <p className="text-[18px] md:text-[26px] text-black leading-snug">MOTOR VEHICLES 
+</p>
           <p className="text-[18px] md:text-[26px] text-[#f2c94c] font-semibold leading-snug">
-            BESTSELLING
+             LAW PORTAL
+
           </p>
           <p className="text-[18px] md:text-[26px] text-black leading-snug">AUTHOR</p>
         </div>
@@ -46,11 +48,12 @@ export default function NewRelease() {
         {/* RIGHT: Description & Button */}
         <div className="w-full md:w-1/3 text-center md:text-left flex flex-col items-center md:items-start  md:mt-0">
           <p className="text-[14px] md:text-[15px] leading-relaxed text-black w-full md:w-[260px]">
-            The heartfelt story of a woman determined to reunite a lost ring with its
-            owner, who ends up finding herself along the way.
+       The essential tool for legal professionals, researchers, and anyone navigating the Motor Vehicles Law of India. Stay updated. Stay empowered.
+
+
           </p>
           <button className="mt-4 md:mt-6 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-medium px-5 py-2">
-            Know More
+            Explore Now
           </button>
         </div>
       </div>
