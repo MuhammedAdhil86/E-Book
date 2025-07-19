@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from "react-router-dom"; 
 export default function VersePart() {
   return (
-    <section className="bg-[#fffbea] min-h-screen flex items-center justify-center px-4">
+    <section className="bg-[#fcf6f1] min-h-screen flex items-center justify-center px-4">
       <div className="max-w-5xl w-full flex flex-col md:flex-row items-center gap-10 py-12">
 
         {/* Text & Buttons */}

@@ -1,14 +1,14 @@
 import React from "react";
 
 import VersePart from "../component/verse-part";
-import Navbar from "../component/navbar";
-import Footer from "../component/footer";
+import Alt_Navbar from "../component/alternative/alternative-nav";
+import Footer from "../component/alternative/footer";
 
 export default function ParentVerseIntro() {
   return (
    <>
    <div>
-    <Navbar/>
+    <Alt_Navbar/>
     <VersePart/>
     <Footer/>
    </div>
