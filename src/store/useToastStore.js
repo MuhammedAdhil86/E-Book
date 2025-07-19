@@ -1,4 +1,4 @@
-// src/store/useToastStore.js
+// store/useToastStore.js
 import { create } from "zustand";
 
 export const useNotificationStore = create((set) => ({
@@ -6,6 +6,5 @@ export const useNotificationStore = create((set) => ({
   type: "info",
   setNotification: (message, type = "info") =>
     set({ message, type }),
-  clearNotification: () =>
-    set({ message: null, type: "info" }),
+  clearNotification: () => set({ message: null }),
 }));

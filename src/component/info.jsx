@@ -40,35 +40,39 @@ const features = [
 
 export default function InfoPart() {
   return (
-    <section className="bg-gradient-to-br from-slate-50 to-white py-16 px-6 md:px-16 font-sans">
+    <section className="bg-[#fcf6f1] py-20 px-6 md:px-12 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Title */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-4">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-serifTitle font-bold text-gray-900 mb-4">
             Motor Vehicles Law
           </h2>
-          <p className="text-gray-600 text-lg max-w-xl mx-auto italic">
+          <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto italic">
             Your real-time, searchable guide to evolving vehicle regulations.
           </p>
-          <div className="mt-4 w-24 h-1 bg-indigo-500 mx-auto rounded-full" />
+          <div className="mt-4 w-20 h-1 bg-yellow-500 mx-auto rounded-full" />
         </div>
 
-        {/* Grid Cards */}
+        {/* Feature Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="relative group rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
+              className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-white"
             >
               <img
                 src={feature.image}
                 alt={feature.title}
-                className="w-full h-60 object-cover transform group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-60 object-cover transition-transform duration-300 transform group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent group-hover:from-black/80 transition duration-300" />
               <div className="absolute bottom-0 p-6 text-white z-10">
-                <h4 className="text-xl font-bold mb-1">{feature.title}</h4>
-                <p className="text-sm text-slate-200">{feature.description}</p>
+                <h4 className="text-xl md:text-2xl font-semibold mb-2">
+                  {feature.title}
+                </h4>
+                <p className="text-sm md:text-base text-slate-200">
+                  {feature.description}
+                </p>
               </div>
             </div>
           ))}

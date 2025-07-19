@@ -1,14 +1,12 @@
-// pages/SignupPage.jsx
-
 import React, { useState } from "react";
 import { useBookStore } from "../store/useBookStore";
 import indianStates from "../data/indianstate";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useNotificationStore } from "../store/useToastStore"; // ✅ Zustand toast store
 
 const SignupPage = () => {
   const signup = useBookStore((state) => state.signup);
+  const setNotification = useNotificationStore((s) => s.setNotification); // ✅ Zustand toast
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -35,24 +33,14 @@ const SignupPage = () => {
 
     try {
       await signup(formData);
-
-      toast.success("Signup successful!", {
-        position: "top-center",
-        autoClose: 2000,
-      });
-
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
+      setNotification("Signup successful!", "success"); // ✅ Zustand toast
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
       const message =
         typeof err === "string"
           ? err
           : err?.message || err?.error || "Signup failed. Please try again.";
-      toast.error(message, {
-        position: "top-center",
-        autoClose: 3000,
-      });
+      setNotification(message, "error"); // ✅ Zustand toast
     } finally {
       setLoading(false);
     }
@@ -60,7 +48,6 @@ const SignupPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fffbea] px-4">
-      <ToastContainer />
       <div className="w-full max-w-sm bg-white shadow-lg rounded-xl p-6 space-y-6">
         <h2 className="text-xl font-semibold text-gray-800 text-center">
           Create Account

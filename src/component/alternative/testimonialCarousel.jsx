@@ -1,62 +1,95 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import clsx from "clsx";
+import Modal from "react-modal";
 import api from "../../api/Instance";
+import "@fontsource/pt-serif/400-italic.css";
+
+Modal.setAppElement("#root");
 
 export default function TestimonialCarousel() {
-  const [testimonials, setTestimonials] = useState([]);
-  const [current, setCurrent] = useState(0);
+  const [testimonial, setTestimonial] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     api.get("/quotes/getall")
-      .then((resp) => {
-        const arr = resp.data?.responsedata;
-        if (Array.isArray(arr) && arr.length > 0) {
-          const items = arr.map(q => ({
+      .then(resp => {
+        const q = resp.data.responsedata?.[0];
+        if (q) {
+          setTestimonial({
             quote: q.quote,
+            title: q.EbookContent?.title || "",
             author: q.author || "",
-          }));
-          setTestimonials(items);
-          setCurrent(0);
-        } else {
-          console.warn("No quotes returned or wrong format:", resp.data);
+            verified: q.EbookContent?.verified_content || ""
+          });
         }
       })
-      .catch((err) => console.error("Failed to load quotes:", err));
+      .catch(console.error);
   }, []);
 
-  const next = () => setCurrent(prev => (prev + 1) % testimonials.length);
-  const prev = () => setCurrent(prev => (prev - 1 + testimonials.length) % testimonials.length);
+  if (!testimonial) return null;
 
-  if (!testimonials.length) return null; // can substitute with a Loader
+  const { quote, title, author, verified } = testimonial;
+  const hasVerified = Boolean(verified?.trim());
 
   return (
-    <section className="bg-[#fbf5f1] px-4 font-serif text-center h-64">
-      <div className="max-w-4xl mx-auto relative overflow-hidden min-h-[220px]">
-        <div className="flex justify-center items-center h-full mt-20">
-          <div
-            className="transition-transform duration-500 ease-in-out flex w-full"
-            style={{ transform: `translateX(-${current * 100}%)` }}
-          >
-            {testimonials.map((item, index) => (
-                <div
-                key={index}
-                className="flex-shrink-0 w-full  text-center    "
-              >
-                <p className="text-lg sm:text-xl md:text-2xl italic text-gray-800 leading-relaxed max-w-3xl">
-                  {item.quote}
-                </p>
-                <span className="not-italic font-medium block mt-4 text-gray-700 text-sm sm:text-base">
-                  {item.author}
-                </span>
-              </div>
-            ))}
+    <section className="bg-[#fbf5f1] px-4 font-serif text-center py-8">
+      <div className="max-w-3xl mx-auto text-left">
+        {/* 🔹 Styled Quote Paragraph */}
+        <p className="text-lg sm:text-xl md:text-2xl italic text-gray-800 leading-relaxed max-w-3xl mx-auto mb-2">
+          {quote}
+        </p>
+
+        {title && <p className="text-lg font-medium mb-1">{title}</p>}
+        {author && <p className="text-base mb-4">— {author}</p>}
+
+        {hasVerified && (
+          <div className="mb-4">
+            <div
+              className="text-gray-700 line-clamp-3 mb-2"
+              style={{
+                fontFamily: "'PT Serif', serif",
+                fontStyle: "italic",
+                lineHeight: 1.6,
+              }}
+              dangerouslySetInnerHTML={{ __html: verified }}
+            />
+            <button
+              className="text-blue-600 underline"
+              onClick={() => setShowModal(true)}
+            >
+              See more
+            </button>
           </div>
-        </div>
+        )}
 
-        
-
-      
+        <Modal
+          isOpen={showModal}
+          onRequestClose={() => setShowModal(false)}
+          style={{
+            overlay: {
+              backgroundColor: "rgba(0,0,0,0.5)",
+              overflowY: "auto"
+            },
+            content: {
+              maxWidth: "600px",
+              maxHeight: "80vh",
+              margin: "auto",
+              overflowY: "auto",
+              fontFamily: "'PT Serif', serif",
+              fontStyle: "italic",
+              lineHeight: 1.6,
+            }
+          }}
+        >
+          <button
+            onClick={() => setShowModal(false)}
+            className="absolute top-3 right-3 text-xl"
+          >✕</button>
+          <h3 className="text-xl font-bold mb-4">Content</h3>
+          <div
+            className="prose text-gray-800"
+            dangerouslySetInnerHTML={{ __html: verified }}
+          />
+        </Modal>
       </div>
     </section>
   );

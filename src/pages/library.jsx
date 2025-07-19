@@ -1,12 +1,12 @@
 import React from 'react'
-import Navbar from "../component/navbar";
+import Alt_Navbar from "../component/alternative/alternative-nav";
 import ProductList from '../component/productlist'
-import Footer from '../component/footer'
+import Footer from '../component/alternative/footer'
 
 export default function Library() {
   return (
     <div>
-      <Navbar/>
+      <Alt_Navbar/>
       <ProductList/>
       <Footer/>
     </div>

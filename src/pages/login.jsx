@@ -1,43 +1,47 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBookStore } from "../store/useBookStore";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNotificationStore } from "../store/useToastStore"; // ✅ Zustand store
 
 export default function Login() {
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState("");
+
   const mobile = useBookStore((s) => s.mobile);
   const setMobile = useBookStore((s) => s.setMobile);
   const sendOtp = useBookStore((s) => s.sendOtp);
   const verifyOtp = useBookStore((s) => s.verifyOtp);
-  const setNotification = useNotificationStore((s) => s.setNotification); // ✅
+
+  const setNotification = useNotificationStore((s) => s.setNotification); // ✅ Zustand toast store
   const navigate = useNavigate();
 
+  // ✅ OTP Send handler with Zustand toast
   const handleSendOtp = async () => {
     try {
       await sendOtp(mobile);
       setShowOtp(true);
-      toast.success("OTP sent successfully");
+      setNotification("OTP sent successfully", "success"); // ✅ toast
     } catch (e) {
-      toast.error("Failed to send OTP");
+      setNotification("Failed to send OTP", "error"); // ✅ toast
     }
   };
 
+  // ✅ OTP Verify handler with Zustand toast
   const handleVerifyOtp = async () => {
     try {
       await verifyOtp(mobile, otp);
-      setNotification("Login successful", "success"); // ✅ triggers toast in Home
+      setNotification("Login successful", "success"); // ✅ toast
       navigate("/");
     } catch (e) {
-      toast.error("Invalid OTP");
+      setNotification("Invalid OTP", "error"); // ✅ toast
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <ToastContainer />
+      <ToastContainer /> {/* Still required once in the app */}
       <div className="w-full max-w-sm space-y-6">
         <div className="flex items-center justify-between">
           <button
@@ -58,6 +62,7 @@ export default function Login() {
             </label>
           </div>
 
+          {/* Mobile Number Field */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-600">
               Mobile Number
@@ -75,6 +80,7 @@ export default function Login() {
             </div>
           </div>
 
+          {/* OTP Field */}
           {showOtp && (
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-600">
@@ -91,6 +97,7 @@ export default function Login() {
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="button"
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 rounded transition"
@@ -99,6 +106,7 @@ export default function Login() {
             {showOtp ? "Verify OTP" : "Get OTP"}
           </button>
 
+          {/* Signup Link */}
           <p className="text-xs text-center text-gray-500">
             Don&apos;t have an account?{" "}
             <a href="/signup" className="text-blue-600 font-medium">

@@ -1,53 +1,68 @@
-import React from 'react';
+import React from "react";
+import { Link } from "react-router-dom"; // Import for routing
+import Playstore from "../../img/playstore.png";
+import Appstore from "../../img/appstore.png";
 
 export default function Footer() {
+  // Define nav links here
+  const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Library", href: "/library" },
+    { label: "About Us", href: "/about" },
+    { label: "Subscription", href: "/subscription" },
+  ];
+
   return (
     <footer className="bg-[#faf3ed] text-gray-800 font-body">
-      {/* Bookstore Logos */}
+      {/* App Store Badges */}
       <div className="text-center py-8 border-b border-gray-200">
-        <h2 className="text-2xl font-serifTitle mb-6">BOOKS ARE AVAILABLE ON</h2>
-        <div className="flex justify-center gap-8 flex-wrap items-center">
-          <img src="/logos/amazon.png" alt="Amazon" className="h-6 object-contain" />
-          <img src="/logos/apple-books.png" alt="Apple Books" className="h-6 object-contain" />
-          <img src="/logos/barnes-noble.png" alt="Barnes & Noble" className="h-6 object-contain" />
-          <img src="/logos/bookshop.png" alt="Bookshop.org" className="h-6 object-contain" />
-          <img src="/logos/kobo.png" alt="Kobo" className="h-6 object-contain" />
-          <img src="/logos/andersons.png" alt="Anderson's Bookshop" className="h-6 object-contain" />
+        <h2 className="text-2xl font-serifTitle mb-6">APPS ARE AVAILABLE ON</h2>
+        <div className="flex justify-center items-center gap-4 flex-wrap">
+          <a href="#" className="transform transition hover:scale-105">
+            <img
+              src={Playstore}
+              alt="Get it on Google Play"
+              className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain"
+            />
+          </a>
+          <a href="#" className="transform transition hover:scale-105">
+            <img
+              src={Appstore}
+              alt="Download on the App Store"
+              className="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain"
+            />
+          </a>
         </div>
       </div>
 
       {/* Footer Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-8 py-12">
-        {/* Column 1 - About */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-6 md:px-12 py-12">
+        {/* About */}
         <div>
-          <h3 className="font-serifTitle text-lg mb-4">Sonali Dev</h3>
+          <h3 className="font-serifTitle text-lg mb-4">Motor Vehicles Law</h3>
           <p className="text-sm leading-relaxed mb-4">
-            I writes hilarious & heartwarming stories about families without boundaries. Her novels have been named Best Books of the Year by Library Journal.
+            The essential tool for legal professionals, researchers, and anyone navigating the Motor Vehicles Law of India. Stay updated. Stay empowered.
           </p>
-          <div className="flex gap-4 text-gray-600">
-            <a href="#"><i className="fab fa-facebook-f"></i></a>
-            <a href="#"><i className="fab fa-instagram"></i></a>
-            <a href="#"><i className="fab fa-x-twitter"></i></a>
-            <a href="#"><i className="fab fa-youtube"></i></a>
-          </div>
         </div>
 
-        {/* Column 2 - Links */}
+        {/* Useful Links */}
         <div>
           <h4 className="font-serifTitle text-lg mb-4">Useful Links</h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:underline">Home</a></li>
-            <li><a href="#" className="hover:underline">About Me</a></li>
-            <li><a href="#" className="hover:underline">Books</a></li>
-            <li><a href="#" className="hover:underline">Podcast</a></li>
-            <li><a href="#" className="hover:underline">Contact Me</a></li>
+            {navItems.map(({ label, href }) => (
+              <li key={label}>
+                <Link to={href} className="hover:underline">
+                  {label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
-        {/* Column 3 - Newsletter */}
+        {/* Newsletter */}
         <div>
           <h4 className="font-serifTitle text-lg mb-4">Subscribe to Newsletter</h4>
-          <form className="flex flex-col space-y-2 ">
+          <form className="flex flex-col space-y-2">
             <input
               type="email"
               placeholder="Your Email"
@@ -55,17 +70,37 @@ export default function Footer() {
             />
             <button
               type="submit"
-              className="bg-yellow-400 hover:bg-yellow-500 text-grey-700 px-4 py-2 "
+              className="bg-yellow-400 hover:bg-yellow-500 text-gray-700 px-4 py-2 transition-colors"
             >
               Subscribe
-            </button>``
+            </button>
           </form>
         </div>
       </div>
 
-      {/* Bottom Line */}
-      <div className="text-center text-xs text-gray-500 py-4 border-t border-gray-200">
-        © 2024 Sonali Dev – All Rights Reserved
+      {/* Contact & Copyright */}
+      <div className="bg-[#f4ebe3] border-t border-gray-200 text-center text-sm text-gray-600 py-6 px-4 space-y-2">
+        <p>
+          📧{" "}
+          <a
+            href="mailto:motorvehicleslaw@gmail.com"
+            className="hover:underline text-blue-600"
+          >
+            motorvehicleslaw@gmail.com
+          </a>
+        </p>
+        <p>
+          💼 Powered by{" "}
+          <a
+            href="https://teqbae.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold hover:underline"
+          >
+            Teqbae Innovations and Solutions India Pvt Ltd.
+          </a>{" "}
+          | © {new Date().getFullYear()}
+        </p>
       </div>
     </footer>
   );

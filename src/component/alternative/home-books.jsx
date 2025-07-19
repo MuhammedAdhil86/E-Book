@@ -37,7 +37,8 @@ export default function BooksSection() {
         </div>
         <div className="flex flex-col items-start">
           <p className="text-sm text-gray-700 max-w-sm mb-4">
-            I write hilarious & heartwarming stories about families without boundaries.
+          I write insightful & engaging guides about motor vehicle law without borders.
+
           </p>
           <button className="bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-medium px-5 py-2 transition duration-300 shadow-sm">
             View All Books

@@ -61,7 +61,7 @@ export default function ProductList() {
 
   return (
     <motion.section
-      className="bg-white min-h-screen py-10 px-4 md:px-8 mt-10"
+      className="bg-[#fcf6f1] min-h-screen py-10 px-4 md:px-8 mt-10"
       variants={sectionFadeIn}
       initial="initial"
       animate="animate"

@@ -17,6 +17,7 @@ import Invoice from '../pages/invoice';
 import ProtectedRoute from './ProtectedRoute';
 import QuotesPage from '../pages/quotespage';
 import ViewBook from '../pages/viewbook';
+import About from '../pages/about';
 
 export default function AppRouter() {
   return (
@@ -29,6 +30,7 @@ export default function AppRouter() {
       <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/invoice" element={<Invoice />} />
       <Route path="/quotes" element={<QuotesPage/>} />
+      <Route path="/about" element={<About/>} />
 
       {/* Protected Routes */}
       <Route
