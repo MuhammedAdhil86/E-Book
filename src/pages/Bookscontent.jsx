@@ -1,10 +1,10 @@
 import React from 'react'
 import BookReading from '../component/book-read'
-import Navbar from '../component/navbar'
+import Alt_Navbar from '../component/alternative/alternative-nav'
 export default function Bookscontent() {
   return (
     <div>
-      <Navbar/>
+      <Alt_Navbar/>
       <BookReading/>
     </div>
   )

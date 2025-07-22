@@ -4,7 +4,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import api from "../../api/Instance"; // Adjust if needed
+import api from "../../api/Instance";
+
+// ✅ Define image base URL
+const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 
 export default function BooksSection() {
   const [books, setBooks] = useState([]);
@@ -25,6 +28,13 @@ export default function BooksSection() {
     fetchBooks();
   }, []);
 
+  // ✅ Function to construct full image URL
+  const getImageUrl = (url) => {
+    if (!url)
+      return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
+    return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
+  };
+
   return (
     <section className="bg-white lg:min-h-screen px-6 lg:px-24 font-serif flex flex-col justify-center lg:mt-4 mt-7">
       {/* Top Section */}
@@ -37,8 +47,7 @@ export default function BooksSection() {
         </div>
         <div className="flex flex-col items-start">
           <p className="text-sm text-gray-700 max-w-sm mb-4">
-          I write insightful & engaging guides about motor vehicle law without borders.
-
+            I write insightful & engaging guides about motor vehicle law without borders.
           </p>
           <button className="bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-medium px-5 py-2 transition duration-300 shadow-sm">
             View All Books
@@ -53,7 +62,7 @@ export default function BooksSection() {
         <p className="text-center text-gray-500 mt-8">No books found.</p>
       ) : (
         <>
-          {/* Updated Carousel for small/medium screens */}
+          {/* Mobile Carousel */}
           <div className="lg:hidden mt-5">
             <Swiper
               slidesPerView={3}
@@ -62,7 +71,6 @@ export default function BooksSection() {
               loop={false}
               onSwiper={(swiper) => {
                 swiperRef.current = swiper;
-                // Force recalculation to ensure correct layout on load
                 setTimeout(() => swiper.update(), 0);
               }}
             >
@@ -71,9 +79,13 @@ export default function BooksSection() {
                   <div className="flex flex-col items-center text-center">
                     <div className="p-1 bg-[#faf3ed] rounded">
                       <img
-                        src={book.coverImage}
+                        src={getImageUrl(book.cover_image)} // ✅ Use image helper
                         alt={book.title}
                         className="w-[120px] h-[180px] object-cover rounded shadow-md"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover")
+                        }
                       />
                     </div>
                     <p className="mt-2 text-xs text-black font-medium leading-tight">
@@ -85,7 +97,7 @@ export default function BooksSection() {
             </Swiper>
           </div>
 
-          {/* Desktop carousel with top-right arrows */}
+          {/* Desktop Carousel */}
           <div className="hidden lg:block mt-1">
             <div className="flex justify-end mb-4 gap-3 pr-4">
               <button
@@ -113,9 +125,13 @@ export default function BooksSection() {
                   <div className="flex flex-col items-center text-center">
                     <div className="p-8 bg-[#faf3ed] rounded">
                       <img
-                        src={book.coverImage}
+                        src={getImageUrl(book.cover_image)} // ✅ Use image helper
                         alt={book.title}
                         className="w-[180px] h-[260px] object-cover rounded shadow-md"
+                        onError={(e) =>
+                          (e.target.src =
+                            "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover")
+                        }
                       />
                     </div>
                     <p className="mt-3 text-sm text-black font-medium leading-tight max-w-[200px]">

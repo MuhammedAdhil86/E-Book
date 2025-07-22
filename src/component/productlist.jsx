@@ -7,7 +7,10 @@ import {
   sectionFadeIn,
   headingFadeIn,
   cardVariant,
-} from "../animations/libraryAnimation"; // ✅
+} from "../animations/libraryAnimation";
+
+// ✅ Image base URL for DigitalOcean Spaces
+const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 
 export default function ProductList() {
   const [books, setBooks] = useState([]);
@@ -16,12 +19,11 @@ export default function ProductList() {
   const { subscriptionType } = useBookStore();
   const navigate = useNavigate();
 
+  // ✅ Constructs full image URL
   const getImageUrl = (url) => {
     if (!url)
       return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
-    return url.startsWith("http")
-      ? url
-      : `${import.meta.env.VITE_API_BASE_URL}${url}`;
+    return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
   };
 
   useEffect(() => {
@@ -32,9 +34,7 @@ export default function ProductList() {
           ? res.data
           : res.data?.responsedata || [];
         setBooks(
-          data.sort((a, b) =>
-            (a.title || "").localeCompare(b.title || "")
-          )
+          data.sort((a, b) => (a.title || "").localeCompare(b.title || ""))
         );
       } catch (err) {
         setError("Failed to load books.");
@@ -54,8 +54,7 @@ export default function ProductList() {
   };
 
   if (loading) return <p className="text-center py-10">Loading books...</p>;
-  if (error)
-    return <p className="text-center text-red-600">{error}</p>;
+  if (error) return <p className="text-center text-red-600">{error}</p>;
   if (!books.length)
     return <p className="text-center text-gray-500">No books found.</p>;
 
@@ -80,10 +79,10 @@ export default function ProductList() {
           <motion.div
             key={book._id || book.id || index}
             className="relative group border rounded overflow-hidden shadow hover:shadow-lg transition"
-            {...cardVariant(index)} // ✅ apply per-card animation
+            {...cardVariant(index)}
           >
             <img
-              src={getImageUrl(book.coverImageUrl)}
+              src={getImageUrl(book.cover_image)} // ✅ Use correct field name
               alt={book.title}
               className="w-full h-56 object-cover"
               onError={(e) =>
@@ -106,9 +105,7 @@ export default function ProductList() {
             </div>
             <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
               <button
-                onClick={() =>
-                  handleReadClick(book._id || book.id)
-                }
+                onClick={() => handleReadClick(book._id || book.id)}
                 className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500"
               >
                 Read

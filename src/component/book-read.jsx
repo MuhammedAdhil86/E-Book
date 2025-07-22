@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -15,7 +12,50 @@ import {
 } from "react-icons/fa";
 import api from "../api/Instance";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import DOMPurify from "dompurify";
+
+const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
+const BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com";
+
+// ✅ Helper to get full image URL
+const getImageUrl = (url) => {
+  if (!url) return "/bookimage.jpg";
+  return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
+};
+
+// ✅ Fix relative links inside verified_content
+const fixRelativeLinks = (htmlString) => {
+  if (typeof window === "undefined") return htmlString;
+
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = htmlString;
+
+  const links = tempDiv.querySelectorAll("a");
+  links.forEach((a) => {
+    const href = a.getAttribute("href") || "";
+
+    if (!href || href === "#") {
+      // Remove href and make it non-clickable
+      a.removeAttribute("href");
+      a.style.pointerEvents = "none";
+      a.style.color = "gray";
+      a.style.textDecoration = "none";
+      a.title = "This link is inactive";
+      return;
+    }
+
+    // Fix relative links
+    if (!href.startsWith("http")) {
+      a.setAttribute("href", `${BASE_URL}${href.startsWith("/") ? "" : "/"}${href}`);
+    }
+
+    // Open in new tab safely
+    a.setAttribute("target", "_blank");
+    a.setAttribute("rel", "noopener noreferrer");
+  });
+
+  return tempDiv.innerHTML;
+};
 
 export default function BookReader() {
   const { id: bookId } = useParams();
@@ -28,133 +68,6 @@ export default function BookReader() {
   const [popupData, setPopupData] = useState(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const contentRef = useRef();
- const downloadFullBookPDF = async () => {
-    setIsGeneratingPDF(true);
-    try {
-      const doc = new jsPDF("p", "mm", "a4");
-      
-      // Add cover page
-      doc.addImage(bookInfo?.responsedata?.cover_image || "/bookimage.jpg", 'JPEG', 15, 40, 180, 180);
-      doc.setFontSize(28);
-      doc.setFont("helvetica", "bold");
-      doc.text(bookInfo?.responsedata?.title || "Untitled Book", 105, 30, { align: 'center' });
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "normal");
-      doc.text(`by ${bookInfo?.responsedata?.author || "Unknown Author"}`, 105, 230, { align: 'center' });
-      
-      // Add index page
-      doc.addPage();
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.text("Table of Contents", 105, 20, { align: 'center' });
-      doc.setFontSize(12);
-      
-      let y = 40;
-      const addIndexEntry = (node, indent = 0) => {
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-        
-        const text = `${node.numbering ? node.numbering + ' ' : ''}${node.header || node.title || ''}`;
-        doc.text(' '.repeat(indent * 4) + text, 20, y);
-        y += 7;
-        
-        if (node.children) {
-          node.children.forEach(child => addIndexEntry(child, indent + 1));
-        }
-      };
-      
-      chapters.forEach(chapter => {
-        addIndexEntry(chapter);
-        if (chapter.children) {
-          chapter.children.forEach(child => addIndexEntry(child, 1));
-        }
-      });
-      
-      // Add content pages with proper formatting
-      const addContentPage = (node) => {
-        // Start a new page for each node
-        let currentPage = doc;
-        let pageStarted = false;
-        let yPosition = 20;
-        
-        const addToPDF = (text, fontSize = 10, isBold = false, isItalic = false) => {
-          if (!pageStarted) {
-            currentPage.addPage();
-            currentPage.setFontSize(16);
-            currentPage.setFont("helvetica", "bold");
-            
-            // Chapter title
-            const title = `${node.numbering ? node.numbering + ' ' : ''}${node.header || node.title || ''}`;
-            const titleLines = currentPage.splitTextToSize(title, 180);
-            titleLines.forEach((line, i) => {
-              currentPage.text(line, 20, yPosition + (i * 7));
-            });
-            yPosition += titleLines.length * 7 + 5;
-            
-            // Subtitle if exists
-            if (node.title && node.header) {
-              currentPage.setFontSize(12);
-              currentPage.setFont("helvetica", "italic");
-              currentPage.text(node.title, 20, yPosition);
-              yPosition += 7;
-            }
-            
-            currentPage.setFontSize(fontSize);
-            currentPage.setFont("helvetica", isBold ? "bold" : isItalic ? "italic" : "normal");
-            pageStarted = true;
-          }
-          
-          const lines = currentPage.splitTextToSize(text, 180);
-          for (const line of lines) {
-            if (yPosition > 270) {
-              currentPage.addPage();
-              yPosition = 20;
-            }
-            currentPage.text(line, 20, yPosition);
-            yPosition += 7;
-          }
-        };
-        
-        if (node.draft_content || node.verified_content) {
-          const content = node.draft_content || node.verified_content;
-          const temp = document.createElement("div");
-          temp.innerHTML = content;
-          const plainText = temp.innerText.replace(/\s+/g, " ").trim();
-          addToPDF(plainText);
-        } else {
-          addToPDF("No content available");
-        }
-        
-        // Add border to each page
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-          doc.setPage(i);
-          doc.rect(10, 10, 190, 277);
-        }
-        
-        // Recursively add child content
-        if (node.children) {
-          node.children.forEach(child => addContentPage(child));
-        }
-      };
-      
-      // Add all content pages
-      chapters.forEach(chapter => {
-        addContentPage(chapter);
-        if (chapter.children) {
-          chapter.children.forEach(child => addContentPage(child));
-        }
-      });
-      
-      doc.save(`${bookInfo?.responsedata?.title || "book"}.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -195,8 +108,7 @@ export default function BookReader() {
   const handleZoomOut = () => setZoom((z) => Math.max(z - 10, 50));
   const toggleFullScreen = () => setIsFullscreen((fs) => !fs);
 
-  const flattenTopics = (nodes = []) =>
-    nodes.flatMap((n) => [n, ...flattenTopics(n.children || [])]);
+  const flattenTopics = (nodes = []) => nodes.flatMap((n) => [n, ...flattenTopics(n.children || [])]);
   const flatTopics = flattenTopics(chapters);
   const selectedIndex = flatTopics.findIndex((t) => t.id === selectedTopic?.id);
   const prevTopic = flatTopics[selectedIndex - 1];
@@ -209,15 +121,11 @@ export default function BookReader() {
           <button
             onClick={() => handleTopicClick(topic)}
             className={`block w-full text-left px-2 py-1 rounded ${
-              selectedTopic?.id === topic.id
-                ? "bg-yellow-300 font-bold"
-                : "hover:bg-yellow-100"
+              selectedTopic?.id === topic.id ? "bg-yellow-300 font-bold" : "hover:bg-yellow-100"
             }`}
           >
             {topic.numbering}. {topic.header}
-            {topic.title && (
-              <div className="text-xs text-gray-500 italic ml-4">— {topic.title}</div>
-            )}
+            {topic.title && <div className="text-xs text-gray-500 italic ml-4">— {topic.title}</div>}
           </button>
           {topic.children && renderTopics(topic.children)}
         </li>
@@ -225,81 +133,11 @@ export default function BookReader() {
     </ul>
   );
 
-
-  const cleanHTML = (rawHTML) => {
-    if (!rawHTML) return "";
-    const doc = new DOMParser().parseFromString(rawHTML, "text/html");
-    const walk = (n) => {
-      Array.from(n.childNodes).forEach((c) => {
-        if (c.nodeType === 1) {
-          for (const attr of Array.from(c.attributes)) {
-            const name = attr.name.toLowerCase();
-            if (
-              name.startsWith("on") ||
-              (["href", "src", "action"].includes(name) &&
-                /^(javascript:|data:)/i.test(attr.value))
-            ) {
-              c.removeAttribute(attr.name);
-            }
-          }
-          walk(c);
-        }
-      });
-    };
-    walk(doc.body);
-    return doc.body.innerHTML;
-  }; 
-
-  const parseDraftContent = (html) => {
-    if (!html) return null;
-    const regex = /~ *@\[([^\]]+)\]~@([^~]+)~@/g;
-    const elements = [];
-    let lastIndex = 0;
-    let match;
-    let key = 0;
-
-    while ((match = regex.exec(html)) !== null) {
-      const before = html.slice(lastIndex, match.index);
-      if (before) {
-        elements.push(
-          <div key={key++} className="mb-3 text-justify">
-            <span dangerouslySetInnerHTML={{ __html: cleanHTML(before) }} />
-          </div>
-        );
-      }
-
-      const header = cleanHTML(match[1].trim());
-      const body = cleanHTML(match[2].trim());
-
-      elements.push(
-        <button
-          key={key++}
-          className="text-blue-700 font-semibold underline hover:text-blue-900 cursor-pointer px-1"
-          onClick={() => setPopupData({ header, body })}
-        >
-          {header}
-        </button>
-      );
-
-      lastIndex = regex.lastIndex;
-    }
-
-    const after = html.slice(lastIndex);
-    if (after) {
-      elements.push(
-        <div key={key++} className="mb-3 text-justify">
-          <span dangerouslySetInnerHTML={{ __html: cleanHTML(after) }} />
-        </div>
-      );
-    }
-
-    return elements;
-  };
-
   const renderA4Pages = () => {
-    if (!selectedTopic?.draft_content) return null;
+    if (!selectedTopic?.verified_content) return null;
 
-    const contentLength = selectedTopic.draft_content.length;
+    const content = fixRelativeLinks(selectedTopic.verified_content);
+    const contentLength = content.length;
     const charsPerPage = 3000;
     const pageCount = Math.max(1, Math.ceil(contentLength / charsPerPage));
 
@@ -312,7 +150,7 @@ export default function BookReader() {
             style={{
               width: "210mm",
               minHeight: "297mm",
-              pageBreakAfter: pageIndex < pageCount - 1 ? "always" : "auto"
+              pageBreakAfter: pageIndex < pageCount - 1 ? "always" : "auto",
             }}
           >
             {pageIndex === 0 && (
@@ -326,23 +164,137 @@ export default function BookReader() {
               </>
             )}
 
-            <div className="text-gray-900 text-justify leading-relaxed">
-              {pageIndex === 0 ? (
-                parseDraftContent(selectedTopic.draft_content)
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: cleanHTML(selectedTopic.draft_content) }} />
-              )}
-            </div>
+            <div
+              className="text-gray-900 text-justify leading-relaxed"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(content, { ADD_ATTR: ["target", "rel"] }),
+              }}
+            />
 
             {pageIndex < pageCount - 1 && (
-              <div className="mt-4 text-center text-sm text-gray-500">
-                Continued on next page...
-              </div>
+              <div className="mt-4 text-center text-sm text-gray-500">Continued on next page...</div>
             )}
           </div>
         ))}
       </div>
     );
+  };
+
+  const downloadFullBookPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      const coverImageUrl = getImageUrl(bookInfo?.responsedata?.cover_image);
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = coverImageUrl;
+
+      await new Promise((resolve) => {
+        img.onload = () => {
+          doc.addImage(img, "JPEG", 15, 40, 180, 180);
+          resolve();
+        };
+        img.onerror = () => resolve();
+      });
+
+      doc.setFontSize(28);
+      doc.setFont("helvetica", "bold");
+      doc.text(bookInfo?.responsedata?.title || "Untitled Book", 105, 30, { align: "center" });
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "normal");
+      doc.text(`by ${bookInfo?.responsedata?.author || "Unknown Author"}`, 105, 230, { align: "center" });
+
+      doc.addPage();
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("Table of Contents", 105, 20, { align: "center" });
+      doc.setFontSize(12);
+
+      let y = 40;
+      const addIndexEntry = (node, indent = 0) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+        const text = `${node.numbering ? node.numbering + " " : ""}${node.header || node.title || ""}`;
+        doc.text(" ".repeat(indent * 4) + text, 20, y);
+        y += 7;
+        if (node.children) {
+          node.children.forEach((child) => addIndexEntry(child, indent + 1));
+        }
+      };
+      chapters.forEach((chapter) => addIndexEntry(chapter));
+
+      const addContentPage = (node) => {
+        let currentPage = doc;
+        let pageStarted = false;
+        let yPosition = 20;
+
+        const addToPDF = (text, fontSize = 10, isBold = false, isItalic = false) => {
+          if (!pageStarted) {
+            currentPage.addPage();
+            currentPage.setFontSize(16);
+            currentPage.setFont("helvetica", "bold");
+            const title = `${node.numbering ? node.numbering + " " : ""}${node.header || node.title || ""}`;
+            const titleLines = currentPage.splitTextToSize(title, 180);
+            titleLines.forEach((line, i) => {
+              currentPage.text(line, 20, yPosition + i * 7);
+            });
+            yPosition += titleLines.length * 7 + 5;
+
+            if (node.title && node.header) {
+              currentPage.setFontSize(12);
+              currentPage.setFont("helvetica", "italic");
+              currentPage.text(node.title, 20, yPosition);
+              yPosition += 7;
+            }
+
+            currentPage.setFontSize(fontSize);
+            currentPage.setFont("helvetica", isBold ? "bold" : isItalic ? "italic" : "normal");
+            pageStarted = true;
+          }
+
+          const lines = currentPage.splitTextToSize(text, 180);
+          for (const line of lines) {
+            if (yPosition > 270) {
+              currentPage.addPage();
+              yPosition = 20;
+            }
+            currentPage.text(line, 20, yPosition);
+            yPosition += 7;
+          }
+        };
+
+        if (node.verified_content) {
+          const content = node.verified_content;
+          const temp = document.createElement("div");
+          temp.innerHTML = content;
+          const plainText = temp.innerText.replace(/\s+/g, " ").trim();
+          addToPDF(plainText);
+        } else {
+          addToPDF("No content available");
+        }
+
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.rect(10, 10, 190, 277);
+        }
+
+        if (node.children) {
+          node.children.forEach((child) => addContentPage(child));
+        }
+      };
+
+      chapters.forEach((chapter) => addContentPage(chapter));
+
+      doc.save(`${bookInfo?.responsedata?.title || "book"}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   return (
@@ -395,8 +347,8 @@ export default function BookReader() {
                 <button onClick={toggleFullScreen} className="p-2 hover:bg-gray-200 rounded" title="Fullscreen">
                   {isFullscreen ? <FaCompress /> : <FaExpand />}
                 </button>
-                <button 
-                  className="p-2 hover:bg-gray-200 rounded flex items-center gap-1" 
+                <button
+                  className="p-2 hover:bg-gray-200 rounded flex items-center gap-1"
                   title="Download PDF"
                   onClick={downloadFullBookPDF}
                   disabled={isGeneratingPDF}
@@ -412,35 +364,14 @@ export default function BookReader() {
               <h2 className="text-sm italic text-gray-600">{bookInfo?.responsedata?.author}</h2>
             </div>
 
-            <div className="flex justify-center">
-              {renderA4Pages()}
-            </div>
-
-            {popupData && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
-                <div className="bg-white w-full max-w-lg rounded-xl shadow-xl overflow-hidden border border-blue-200">
-                  <div className="bg-gradient-to-r from-blue-50 to-white px-6 py-4 border-b border-blue-100 relative">
-                    <h3 className="text-lg font-semibold text-blue-800">{popupData.header}</h3>
-                    <button
-                      className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-xl"
-                      onClick={() => setPopupData(null)}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  <div className="p-6 text-gray-700 leading-relaxed whitespace-pre-line">
-                    {popupData.body}
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="flex justify-center">{renderA4Pages()}</div>
           </div>
         ) : (
           <div className="flex flex-col justify-center items-center h-full text-center p-8">
             <h1 className="text-2xl font-bold mb-2 text-gray-900">{bookInfo?.responsedata?.title}</h1>
             <h2 className="text-lg italic text-gray-600 mb-6">{bookInfo?.responsedata?.author}</h2>
             <img
-              src={bookInfo?.responsedata?.cover_image || "/bookimage.jpg"}
+              src={getImageUrl(bookInfo?.responsedata?.cover_image)}
               alt="Book Cover"
               className="max-h-[60vh] max-w-full rounded shadow-lg border border-gray-200"
             />
@@ -450,8 +381,3 @@ export default function BookReader() {
     </div>
   );
 }
-
-
-
-
-
