@@ -3,23 +3,20 @@ import React from "react";
 import play from '../../img/play.png';
 
 const podcasts = [
-{
-  id: 1,
-  thumbnail: "https://img.youtube.com/vi/tO-mYqy_Fo0/maxresdefault.jpg",
-  videoUrl: "https://www.youtube.com/watch?v=tO-mYqy_Fo0",
-  title: "TRACY BROGAN ON LIT WITH LOVE",
-},
+  {
+    id: 1,
+    thumbnail: "https://media.istockphoto.com/id/1045979216/photo/cars-moving-on-the-road-in-city-in-late-evening.jpg?s=612x612&w=0&k=20&c=hFfW7WzeeR3X7FTmwkZ0u4_bBzRK1iJcZwisOgdJB3M=",
+    title: "SECTION 129: WEARING OF HELMETS MANDATORY",
+  },
   {
     id: 2,
-    thumbnail: "https://img.youtube.com/vi/Kd5a2E5W2yM/maxresdefault.jpg",
-    videoUrl: "https://www.youtube.com/watch?v=Kd5a2E5W2yM",
-    title: "SALLY KILPATRICK ON LIT WITH LOVE",
+    thumbnail: "https://renewbuy-cms.s3.ap-south-1.amazonaws.com/Traffic_Rules_and_Regulations_in_India_03_41e7023c3a.jpg",
+    title: "SECTION 184: DANGEROUS DRIVING & PENALTIES",
   },
   {
     id: 3,
-    thumbnail: "https://img.youtube.com/vi/vj3fZuz5AoM/maxresdefault.jpg",
-    videoUrl: "https://www.youtube.com/watch?v=vj3fZuz5AoM",
-    title: "BRENDA NOVAK ON LIT WITH LOVE!",
+    thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgX42SJi5hvMV5WHOr7QC3Qt1W8xfBVbYGpg&s",
+    title: "SECTION 177: GENERAL PROVISION",
   },
 ];
 
@@ -28,30 +25,18 @@ export default function PodcastSection() {
     <section className="bg-white px-6 lg:px-20 font-serif py-12">
       {/* Heading */}
       <div className="text-center mb-12">
-        <p className="italic text-sm text-gray-600 mb-1">Podcasts</p>
-        <h2 className="text-3xl md:text-4xl font-serifTitle">LIT WITH LOVE</h2>
+        <p className="italic text-sm text-gray-600 mb-1">Highlights</p>
+        <h2 className="text-3xl md:text-4xl font-serifTitle">MOTOR VEHICLE ACT</h2>
       </div>
 
       <div className="flex flex-wrap md:flex-nowrap gap-6">
-        {/* Left Card (now uses thumbnail + play) */}
+        {/* Left Card (static image only) */}
         <div className="w-full md:w-1/2 relative rounded-xl overflow-hidden shadow-lg h-[330px]">
           <img
             src={podcasts[0].thumbnail}
             alt={podcasts[0].title}
             className="w-full h-full object-cover"
           />
-          <a
-            href={podcasts[0].videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition"
-          >
-            <img
-              src={play}
-              alt="Play"
-              className="w-14 h-14 object-contain"
-            />
-          </a>
           <p className="absolute bottom-3 left-4 right-4 text-white font-medium text-sm md:text-lg z-10 bg-black/40 p-2 rounded">
             {podcasts[0].title}
           </p>
@@ -67,18 +52,6 @@ export default function PodcastSection() {
                   alt={pod.title}
                   className="w-full h-40 object-cover"
                 />
-                <a
-                  href={pod.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition"
-                >
-                  <img
-                    src={play}
-                    alt="Play"
-                    className="w-10 h-10 object-contain"
-                  />
-                </a>
               </div>
               <p className="text-lg font-medium bg-[#fbf5f1] rounded p-3">
                 {pod.title}
@@ -89,10 +62,10 @@ export default function PodcastSection() {
           {/* Description + Button */}
           <div className="sm:col-span-2 flex justify-between items-start mt-2 gap-4">
             <p className="text-sm text-gray-700 max-w-md font-body">
-When her ex releases a sex tape, Delaney–the youngest daughter of an '80s pop star–flees the spotlight and heads to snowy Bell Harbor.
+              Stay informed about India's Motor Vehicle Act, covering safety regulations, penalties, and legal responsibilities for all road users.
             </p>
             <button className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-medium p-2 rounded transition">
-              View All Podcasts
+              View Books
             </button>
           </div>
         </div>
