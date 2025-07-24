@@ -12,6 +12,10 @@ import {
 // ✅ Image base URL for DigitalOcean Spaces
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 
+// ✅ Dummy image
+const FALLBACK_IMAGE =
+  "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1436194631i/25859879.jpg";
+
 export default function ProductList() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +25,7 @@ export default function ProductList() {
 
   // ✅ Constructs full image URL
   const getImageUrl = (url) => {
-    if (!url)
-      return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
+    if (!url) return FALLBACK_IMAGE;
     return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
   };
 
@@ -60,35 +63,63 @@ export default function ProductList() {
 
   return (
     <motion.section
-      className="bg-[#fcf6f1] min-h-screen py-10 px-4 md:px-8 mt-10"
+      className="bg-[#fcf6f1] min-h-screen py-6 px-2 sm:px-4 md:px-8 mt-10"
       variants={sectionFadeIn}
       initial="initial"
       animate="animate"
     >
-      <motion.h2
-        className="text-2xl font-semibold mb-8 text-center text-gray-800"
-        variants={headingFadeIn}
-        initial="initial"
-        animate="animate"
-      >
-        Explore Our Library
-      </motion.h2>
+      {/* Header & Search */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4 sm:gap-2">
+        {/* Header */}
+        <motion.h2
+          className="text-xl sm:text-2xl font-semibold text-gray-800"
+          variants={headingFadeIn}
+          initial="initial"
+          animate="animate"
+        >
+          Explore Our Library
+        </motion.h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Search box */}
+        <div className="relative w-full sm:w-80">
+          <svg
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm-6 8a6 6 0 1112 0 6 6 0 01-12 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search books here"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Book Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {books.map((book, index) => (
           <motion.div
             key={book._id || book.id || index}
-            className="relative group border rounded overflow-hidden shadow hover:shadow-lg transition"
+            className="relative group border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
             {...cardVariant(index)}
           >
             <img
-              src={getImageUrl(book.cover_image)} // ✅ Use correct field name
+              src={getImageUrl(book.cover_image)}
               alt={book.title}
-              className="w-full h-56 object-cover"
-              onError={(e) =>
-                (e.target.src =
-                  "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover")
-              }
+              className="w-full h-60 sm:h-72 md:h-80 rounded-xl object-fill"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = FALLBACK_IMAGE;
+              }}
             />
             <div className="p-4">
               <h3 className="font-semibold text-gray-900 truncate">
