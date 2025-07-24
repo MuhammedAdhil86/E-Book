@@ -104,47 +104,48 @@ export default function ProductList() {
         </div>
       </div>
 
-      {/* Book Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {books.map((book, index) => (
-          <motion.div
-            key={book._id || book.id || index}
-            className="relative group border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
-            {...cardVariant(index)}
-          >
-            <img
-              src={getImageUrl(book.cover_image)}
-              alt={book.title}
-              className="w-full h-60 sm:h-72 md:h-80 rounded-xl object-fill"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = FALLBACK_IMAGE;
-              }}
-            />
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {book.title || "Untitled"}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {book.author || "Unknown Author"}
-              </p>
-              {book.language?.name && (
-                <p className="text-xs text-gray-500">
-                  Language: {book.language.name}
-                </p>
-              )}
-            </div>
-            <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-              <button
-                onClick={() => handleReadClick(book._id || book.id)}
-                className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500"
-              >
-                Read
-              </button>
-            </div>
-          </motion.div>
-        ))}
+{/* Book Grid */}
+<div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+  {books.map((book, index) => (
+    <motion.div
+      key={book._id || book.id || index}
+      className="relative group border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
+      {...cardVariant(index)}
+    >
+      <img
+        src={getImageUrl(book.cover_image)}
+        alt={book.title}
+        className="w-full h-60 sm:h-72 md:h-80 rounded-xl "
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = FALLBACK_IMAGE;
+        }}
+      />
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 truncate">
+          {book.title || "Untitled"}
+        </h3>
+        <p className="text-sm text-gray-600">
+          {book.author || "Unknown Author"}
+        </p>
+        {book.language?.name && (
+          <p className="text-xs text-gray-500">
+            Language: {book.language.name}
+          </p>
+        )}
       </div>
+      <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+        <button
+          onClick={() => handleReadClick(book._id || book.id)}
+          className="bg-white px-4 py-2 rounded text-black font-semibold hover:bg-yellow-500"
+        >
+          Read
+        </button>
+      </div>
+    </motion.div>
+  ))}
+</div>
+
     </motion.section>
   );
 }
