@@ -1,5 +1,5 @@
 import React from 'react';
-import citybuilding from '../../img/city-building.jpg'
+import citybuilding from '../img/city-building.jpg'
 export default function NewsletterSubscribe() {
   return (
     <div className="flex flex-col md:flex-row items-stretch w-full min-h-[24rem] font-serif">

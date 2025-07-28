@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom"; // Import for routing
-import Playstore from "../../img/playstore.png";
-import Appstore from "../../img/appstore.png";
+import Playstore from "../img/playstore.png";
+import Appstore from "../img/appstore.png";
 
 export default function Footer() {
   // Define nav links here

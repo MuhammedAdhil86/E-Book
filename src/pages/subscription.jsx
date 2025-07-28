@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Alt_Navbar from "../component/alternative/alternative-nav";
+import Navbar from "../component/navbar";
 import { useBookStore } from "../store/useBookStore";
 import { useRazorpayHandler } from "../hooks/useRazorpay";
 import { plans } from "../data/subscriptionPlans";
@@ -14,7 +14,7 @@ export default function Subscription() {
 
   return (
     <>
-      <Alt_Navbar />
+      <Navbar />
       <motion.div
         className="min-h-screen bg-[#fcf6f1] px-4 py-12 text-black mt-5"
         {...containerFadeIn}

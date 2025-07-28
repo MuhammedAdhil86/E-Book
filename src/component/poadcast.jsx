@@ -1,6 +1,6 @@
 // src/components/PodcastSection.jsx
 import React from "react";
-import play from '../../img/play.png';
+import play from '../img/play.png';
 
 const podcasts = [
   {

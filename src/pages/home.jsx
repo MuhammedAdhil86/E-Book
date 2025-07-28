@@ -1,36 +1,26 @@
-// src/pages/Home.jsx
-import React, { useEffect } from "react";
-import Navbar from "../component/navbar";
-import Footer from "../component/footer";
-import BooksSection from "../component/bookssection";
-import InfoPart from "../component/info";
-import { useNotificationStore } from "../store/useToastStore";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import LandingPage from "../component/landingpage";
-
-const Home = () => {
-  const { message, type, clearNotification } = useNotificationStore();
-
-  useEffect(() => {
-    if (message) {
-      if (type === "success") toast.success(message);
-      else if (type === "error") toast.error(message);
-      else toast.info(message);
-      clearNotification();
-    }
-  }, [message]);
-
+import React from 'react'
+import NewRelease from '../component/landingpage'
+import BooksSection from '../component/bookssection'
+import AboutSection from '../component/about'
+import Navbar from '../component/navbar'
+import PodcastSection from '../component/poadcast'
+import TestimonialCarousel from '../component/testimonialCarousel'
+import NewsletterSubscribe from '../component/newslatter'
+import Footer from './footer'
+export default function Home() {
   return (
-    <div className="overflow-hidden">
-      <ToastContainer position="top-center" />
-      <Navbar />
-      <LandingPage/>
-      <InfoPart />
-      <BooksSection />
-      <Footer />
-    </div>
-  );
-};
+    <>
+    <div>
+        <Navbar/>
+<NewRelease/>
+ <BooksSection/>
 
-export default Home;
+<AboutSection/>
+<PodcastSection/>
+<TestimonialCarousel/>
+<NewsletterSubscribe/>
+<Footer/>
+    </div>
+    </>
+  )
+}

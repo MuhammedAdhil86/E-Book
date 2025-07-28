@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import api from "../../api/Instance";
+import api from "../api/Instance";
 import "@fontsource/pt-serif/400-italic.css";
 
 Modal.setAppElement("#root");

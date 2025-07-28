@@ -1,6 +1,6 @@
 // src/components/AboutSection.jsx
 import React from "react";
-import Traffic from '../../img/Traffic.jpg'
+import Traffic from '../img/Traffic.jpg'
 export default function AboutSection() {
   return (
     <section className="flex flex-col md:flex-row font-serif items-stretch lg:mt-0 mt-7 ">
