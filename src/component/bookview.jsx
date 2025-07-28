@@ -1,3 +1,5 @@
+// Updated BookReaderr.js with CitationContent integration
+
 import React, { useState, useEffect, useRef } from "react";
 import {
   FaSearch,
@@ -13,6 +15,7 @@ import {
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
 import DOMPurify from "dompurify";
+import CitationContent from "../component/book_reader/CitationContent"; // <-- Import CitationContent component
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 const BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com";
@@ -58,7 +61,7 @@ export default function BookReaderr() {
   const contentRefs = useRef({});
   const contentContainerRef = useRef();
 
-  const [searchQuery, setSearchQuery] = useState(""); // 🔍 Added
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,7 +105,7 @@ export default function BookReaderr() {
   const handleZoomOut = () => setZoom((z) => Math.max(50, z - 10));
   const toggleFullScreen = () => setIsFullscreen((fs) => !fs);
 
-  const searchFilter = (topics) => { // 🔍 Added
+  const searchFilter = (topics) => {
     return topics
       .map((topic) => {
         const children = searchFilter(topic.children || []);
@@ -171,8 +174,8 @@ export default function BookReaderr() {
               type="text"
               placeholder={`Search inside ${bookInfo?.title || "this book"}`}
               className="w-full border rounded p-2 pr-8 text-sm"
-              value={searchQuery} // 🔍 Added
-              onChange={(e) => setSearchQuery(e.target.value)} // 🔍 Added
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
             <FaSearch className="absolute top-2.5 right-2 text-gray-400" />
           </div>
@@ -246,12 +249,8 @@ export default function BookReaderr() {
               {selectedTopic.title && (
                 <h3 className="text-lg italic text-gray-600 mb-4">{selectedTopic.title}</h3>
               )}
-              <div
-                className="text-gray-900 text-justify leading-relaxed"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(fixRelativeLinks(selectedTopic.verified_content || "")),
-                }}
-              />
+              <CitationContent node={selectedTopic} selectedNodeId={selectedTopic.id} />
+              {/* Render citations instead of static content */}
             </div>
           ) : (
             <img
