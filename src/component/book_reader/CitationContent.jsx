@@ -159,8 +159,8 @@ const CitationContent = ({ node, selectedNodeId }) => {
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-1 bg-gray-300 rounded-full mx-auto"></div>
               </div>
-              <h3 className="text-base font-semibold text-gray-800 flex-1 text-center">
-                Citation Details
+              <h3 className="text-base font-semibold text-gray-800 flex-1 text-center"> 
+                Citation Data
               </h3>
               <button
                 onClick={closeBottomSheet}
@@ -193,7 +193,7 @@ const CitationContent = ({ node, selectedNodeId }) => {
             <div className="p-3 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={closeBottomSheet}
-                className="w-full bg-black text-white py-2 rounded-sm font-medium hover:bg-yellow-700 transition-colors text-sm"
+                className="w-full bg-yellow-400  py-2 rounded-sm font-medium hover:bg-yellow-700 transition-colors text-sm"
               >
                 Close
               </button>

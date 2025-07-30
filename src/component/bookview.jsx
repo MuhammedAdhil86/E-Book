@@ -1,5 +1,3 @@
-// Updated BookReaderr.js with CitationContent integration
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   FaSearch,
@@ -57,6 +55,7 @@ export default function BookReaderr() {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSidebarFullscreen, setIsSidebarFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const contentRefs = useRef({});
   const contentContainerRef = useRef();
@@ -104,6 +103,7 @@ export default function BookReaderr() {
   const handleZoomIn = () => setZoom((z) => Math.min(200, z + 10));
   const handleZoomOut = () => setZoom((z) => Math.max(50, z - 10));
   const toggleFullScreen = () => setIsFullscreen((fs) => !fs);
+  const toggleSidebarFullScreen = () => setIsSidebarFullscreen((fs) => !fs);
 
   const searchFilter = (topics) => {
     return topics
@@ -152,19 +152,30 @@ export default function BookReaderr() {
   const currentChapter = selectedTopic ? findChapterForTopic(selectedTopic.id, chapters) : null;
 
   return (
-    <div className={`flex h-screen ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
+    <div className={`flex h-screen ${isFullscreen ? "fixed inset-0 z-50 bg-white" : ""}`}>
+      {/* Overlay for Sidebar Fullscreen */}
+      {isSidebarFullscreen && (
+        <div
+          className="fixed inset-0 bg-black opacity-50 z-40"
+          onClick={toggleSidebarFullScreen}
+        />
+      )}
+
+      {/* Sidebar */}
       {!isFullscreen && (
-        <div className="w-[35%] shadow-xl p-4 flex flex-col rounded-xl">
+        <div className={`shadow-xl p-4 flex flex-col rounded-xl bg-white z-50
+          ${isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[35%]"}`}>
           <div className="relative mb-4 h-10 flex items-center justify-center border-b pb-2">
-            <div className="absolute left-0 flex items-center pl-2">
+            <div className="absolute left-0 flex items-center pl-2 space-x-2">
               <FaInfoCircle className="text-gray-500" title="Book Info" />
+            
             </div>
             <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
               {bookInfo?.title}
             </h2>
             <div className="absolute right-0 flex items-center pr-2">
-              <button onClick={toggleFullScreen} title="Fullscreen">
-                {isFullscreen ? <FaCompress /> : <FaExpand />}
+              <button onClick={toggleSidebarFullScreen} title="Sidebar Fullscreen">
+                {isSidebarFullscreen ? <FaCompress /> : <FaExpand />}
               </button>
             </div>
           </div>
@@ -197,7 +208,9 @@ export default function BookReaderr() {
         </div>
       )}
 
-      <div className="flex flex-col ml-2 rounded-2xl shadow-xl" style={{ width: isFullscreen ? "100%" : "63%" }}>
+      {/* Content Section */}
+      <div className="flex flex-col ml-2 rounded-2xl shadow-xl bg-white"
+        style={{ width: isFullscreen ? "100%" : "63%" }}>
         {selectedTopic && (
           <div className="header-top-section border-b rounded-2xl shadow-xl mt-2">
             <div className="flex justify-between items-center p-2">
@@ -250,7 +263,6 @@ export default function BookReaderr() {
                 <h3 className="text-lg italic text-gray-600 mb-4">{selectedTopic.title}</h3>
               )}
               <CitationContent node={selectedTopic} selectedNodeId={selectedTopic.id} />
-              {/* Render citations instead of static content */}
             </div>
           ) : (
             <img
