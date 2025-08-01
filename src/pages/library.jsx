@@ -1,21 +1,23 @@
-import React from 'react'
+// File: src/pages/Library.jsx
+import React, { useState } from 'react';
 import Navbar from "../component/navbar";
-import Footer from '../component/footer'
+import Footer from '../component/footer';
 import BookList from '../component/booklist';
 import Hero from '../component/hero';
-import { BookAudioIcon } from 'lucide-react';
 import BookCategories from '../component/bookcategories';
 import FeaturedBooks from '../component/featuredbooks';
 
 export default function Library() {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
   return (
     <div>
-      <Navbar/>
-      <Hero/>
-      <BookCategories/>
-      <FeaturedBooks/>
-      <BookList/>
-      <Footer/>
+      <Navbar />
+      <Hero />
+      <FeaturedBooks />
+      <BookCategories onCategorySelect={setSelectedCategory} />
+      <BookList selectedCategoryId={selectedCategory} />
+      <Footer />
     </div>
-  )
+  );
 }

@@ -1,3 +1,4 @@
+// File: src/component/booklist.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/Instance";
@@ -13,8 +14,9 @@ const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 const FALLBACK_IMAGE =
   "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1436194631i/25859879.jpg";
 
-export default function BookList() {
+export default function BookList({ selectedCategoryId }) {
   const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,9 +35,7 @@ export default function BookList() {
         const data = Array.isArray(res.data)
           ? res.data
           : res.data?.responsedata || [];
-        setBooks(
-          data.sort((a, b) => (a.title || "").localeCompare(b.title || ""))
-        );
+        setBooks(data);
       } catch (err) {
         setError("Failed to load books.");
       } finally {
@@ -44,6 +44,17 @@ export default function BookList() {
     }
     fetchBooks();
   }, []);
+
+  useEffect(() => {
+    if (!selectedCategoryId || selectedCategoryId === 'all') {
+      setFilteredBooks(books);
+    } else {
+      const filtered = books.filter(
+        (book) => String(book.category?.id) === String(selectedCategoryId)
+      );
+      setFilteredBooks(filtered);
+    }
+  }, [selectedCategoryId, books]);
 
   const handleReadClick = (bookId) => {
     if (subscriptionType === "pending") {
@@ -63,20 +74,17 @@ export default function BookList() {
       initial="initial"
       animate="animate"
     >
-      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <motion.h2
           className="text-xl sm:text-2xl font-semibold text-gray-800"
           variants={headingFadeIn}
-          initial="initial"
-          animate="animate"
         >
           Explore Our Library
         </motion.h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-20">
-        {books.map((book, index) => (
+        {filteredBooks.map((book, index) => (
           <motion.div
             key={book._id || book.id || index}
             className="relative group border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
