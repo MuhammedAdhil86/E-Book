@@ -9,7 +9,11 @@ import {
   FaCompress,
   FaBookmark,
   FaInfoCircle,
+  FaFilePdf
+  
+
 } from "react-icons/fa";
+import { PiRewindFill, PiFastForwardFill } from "react-icons/pi";
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
 import DOMPurify from "dompurify";
@@ -164,7 +168,7 @@ export default function BookReaderr() {
       {/* Sidebar */}
       {!isFullscreen && (
         <div className={`shadow-xl p-4 flex flex-col rounded-xl bg-white z-50
-          ${isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[35%]"}`}>
+          ${isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[28%]"}`}>
           <div className="relative mb-4 h-10 flex items-center justify-center border-b pb-2">
             <div className="absolute left-0 flex items-center pl-2 space-x-2">
               <FaInfoCircle className="text-gray-500" title="Book Info" />
@@ -196,7 +200,7 @@ export default function BookReaderr() {
               <div key={ch.id}>
                 <button
                   onClick={() => toggleChapter(ch.id)}
-                  className="w-full text-left font-semibold py-2 border-b flex justify-between items-center"
+                  className="w-full text-left font-semibold py-2 border-b flex justify-between items-center "
                 >
                   {ch.title}
                   {expandedChapter === ch.id ? <FaChevronRight /> : <FaChevronLeft />}
@@ -210,38 +214,71 @@ export default function BookReaderr() {
 
       {/* Content Section */}
       <div className="flex flex-col ml-2 rounded-2xl shadow-xl bg-white"
-        style={{ width: isFullscreen ? "100%" : "63%" }}>
+        style={{ width: isFullscreen ? "100%" : "90%" }}>
         {selectedTopic && (
           <div className="header-top-section border-b rounded-2xl shadow-xl mt-2">
-            <div className="flex justify-between items-center p-2">
-              <div className="flex items-center space-x-2">
-                <button onClick={() => handleTopicClick(prevTopic)} disabled={!prevTopic}>
-                  <FaChevronLeft className={`${!prevTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"}`} />
-                </button>
-                <button onClick={() => handleTopicClick(nextTopic)} disabled={!nextTopic}>
-                  <FaChevronRight className={`${!nextTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"}`} />
-                </button>
-              </div>
-              <div className="flex items-center space-x-4">
-                <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
-                <span>{zoom}%</span>
-                <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
-                <FaBookmark className="cursor-pointer" />
-                <button onClick={toggleFullScreen}>
-                  {isFullscreen ? <FaCompress className="cursor-pointer" /> : <FaExpand className="cursor-pointer" />}
-                </button>
-              </div>
-            </div>
+            {/* controls */}
+          <div className="flex justify-between items-center p-4 ">
+  {/* Left: Previous/Next */}
+  <div className="flex items-center space-x-4">
+    <button
+      onClick={() => handleTopicClick(prevTopic)}
+      disabled={!prevTopic}
+      className="text-xl"
+    >
+      <PiRewindFill
+        className={`${!prevTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer text-black"}`}
+      />
+    </button>
+    <button
+      onClick={() => handleTopicClick(nextTopic)}
+      disabled={!nextTopic}
+      className="text-xl"
+    >
+      <PiFastForwardFill
+        className={`${!nextTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer text-black"}`}
+      />
+    </button>
+  </div>
 
-            <div className="bg-yellow-400 text-black font-bold text-center py-5 rounded-xl ml-2 mr-2">
-              {currentChapter && (
-                <div className="text-xl font-medium text-gray-800 mt-1 ">
-                  {currentChapter.title}
-                </div>
-              )}
-            </div>
+  {/* Right: Zoom, Bookmark, Fullscreen */}
+  <div className="flex items-center space-x-5 text-lg">
+    <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
+    <span className="text-lg">{zoom}%</span>
+    <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
+    <FaBookmark className="cursor-pointer" />
+    <button onClick={toggleFullScreen}>
+      {isFullscreen ? (
+        <FaCompress className="cursor-pointer" />
+      ) : (
+        <FaExpand className="cursor-pointer" />
+      )}
+    </button>
+      <FaFilePdf
+    className="cursor-pointer text-black"
+     // ← Call your export function here
+  />
+  </div>
+</div>
+                        {/* controls */}
+<div className="bg-yellow-400 text-black font-bold text-center py-1 rounded-xl ml-2 mr-2">
+  {currentChapter && (
+    <>
+      {/* Header (top) */}
+      <div className="text-sm md:text-base text-gray-700 font-semibold ">
+        {currentChapter.title}
+      </div>
+
+      {/* Title (Top) */}
+      <div className="text-xl font-medium text-gray-800">
+        {currentChapter.header}
+      </div>
+    </>
+  )}
+</div>
+
             <div className="text-center font-semibold text-lg py-3 ">
-              {selectedTopic.header}
+              {selectedTopic.title} ~ {selectedTopic.header}
             </div>
           </div>
         )}

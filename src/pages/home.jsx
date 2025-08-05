@@ -1,19 +1,20 @@
 import React from 'react'
 import NewRelease from '../component/landingpage'
-import BooksSection from '../component/bookssection'
+
 import AboutSection from '../component/about'
 import Navbar from '../component/navbar'
 import PodcastSection from '../component/poadcast'
 import TestimonialCarousel from '../component/testimonialCarousel'
 import NewsletterSubscribe from '../component/newslatter'
 import Footer from '../component/footer'
+import FeaturedBooks from '../component/featuredbooks'
 export default function Home() {
   return (
     <>
     <div>
         <Navbar/>
 <NewRelease/>
- <BooksSection/>
+<FeaturedBooks/>
 
 <AboutSection/>
 <PodcastSection/>
