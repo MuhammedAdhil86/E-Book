@@ -29,14 +29,14 @@ const CitationContent = ({ node, selectedNodeId }) => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (node?.draft_content) {
-      const processed = processCitationsForDisplay(node.draft_content, node.id);
+    if (node?.verified_content) {
+      const processed = processCitationsForDisplay(node.verified_content, node.id);
       const { panels: parsedPanels, nonAccordionContent: parsedContent } = parseAccordion(processed);
       setPanels(parsedPanels);
       setNonAccordionContent(parsedContent);
       setProcessedContent(processed);
     }
-  }, [node?.draft_content, node?.id]);
+  }, [node?.verified_content, node?.id]);
 
   const processCitationsForDisplay = (html, nodeId) => {
     const citationRegex = /~@\[([^\]]+)\]~@([^~]*)~@/g;

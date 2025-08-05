@@ -8,16 +8,13 @@ import {
   FaExpand,
   FaCompress,
   FaBookmark,
-  FaInfoCircle,
-  FaFilePdf
-  
-
+  FaInfoCircle
 } from "react-icons/fa";
 import { PiRewindFill, PiFastForwardFill } from "react-icons/pi";
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
 import DOMPurify from "dompurify";
-import CitationContent from "../component/book_reader/CitationContent"; // <-- Import CitationContent component
+import CitationContent from "../component/book_reader/CitationContent"; // Import CitationContent
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 const BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com";
@@ -26,29 +23,6 @@ const getImageUrl = (url) => {
   if (!url)
     return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
   return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
-};
-
-const fixRelativeLinks = (htmlString) => {
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = htmlString;
-  const links = tempDiv.querySelectorAll("a");
-  links.forEach((a) => {
-    const href = a.getAttribute("href") || "";
-    if (!href || href === "#") {
-      a.removeAttribute("href");
-      a.style.pointerEvents = "none";
-      a.style.color = "gray";
-      a.style.textDecoration = "none";
-      a.title = "This link is inactive";
-      return;
-    }
-    if (!href.startsWith("http")) {
-      a.setAttribute("href", `${BASE_URL}${href.startsWith("/") ? "" : "/"}${href}`);
-    }
-    a.setAttribute("target", "_blank");
-    a.setAttribute("rel", "noopener noreferrer");
-  });
-  return tempDiv.innerHTML;
 };
 
 export default function BookReaderr() {
@@ -131,11 +105,17 @@ export default function BookReaderr() {
           <button
             onClick={() => handleTopicClick(topic)}
             className={`block w-full text-left px-2 py-1 rounded ${
-              selectedTopic?.id === topic.id ? "bg-yellow-300 font-bold" : "hover:bg-yellow-100"
+              selectedTopic?.id === topic.id
+                ? "bg-yellow-300 font-bold"
+                : "hover:bg-yellow-100"
             }`}
           >
             {topic.header}
-            {topic.title && <div className="text-xs text-gray-500 italic ml-4">— {topic.title}</div>}
+            {topic.title && (
+              <div className="text-xs text-gray-500 italic ml-4">
+                — {topic.title}
+              </div>
+            )}
           </button>
           {topic.children && renderTopics(topic.children)}
         </li>
@@ -153,11 +133,12 @@ export default function BookReaderr() {
     return null;
   };
 
-  const currentChapter = selectedTopic ? findChapterForTopic(selectedTopic.id, chapters) : null;
+  const currentChapter = selectedTopic
+    ? findChapterForTopic(selectedTopic.id, chapters)
+    : null;
 
   return (
     <div className={`flex h-screen ${isFullscreen ? "fixed inset-0 z-50 bg-white" : ""}`}>
-      {/* Overlay for Sidebar Fullscreen */}
       {isSidebarFullscreen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-40"
@@ -165,14 +146,15 @@ export default function BookReaderr() {
         />
       )}
 
-      {/* Sidebar */}
       {!isFullscreen && (
-        <div className={`shadow-xl p-4 flex flex-col rounded-xl bg-white z-50
-          ${isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[28%]"}`}>
+        <div
+          className={`shadow-xl p-4 flex flex-col rounded-xl bg-white z-50 ${
+            isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[28%]"
+          }`}
+        >
           <div className="relative mb-4 h-10 flex items-center justify-center border-b pb-2">
             <div className="absolute left-0 flex items-center pl-2 space-x-2">
               <FaInfoCircle className="text-gray-500" title="Book Info" />
-            
             </div>
             <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
               {bookInfo?.title}
@@ -205,77 +187,77 @@ export default function BookReaderr() {
                   {ch.title}
                   {expandedChapter === ch.id ? <FaChevronRight /> : <FaChevronLeft />}
                 </button>
-                {expandedChapter === ch.id && renderTopics(searchQuery ? ch.children : ch.children || [])}
+                {expandedChapter === ch.id &&
+                  renderTopics(searchQuery ? ch.children : ch.children || [])}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Content Section */}
-      <div className="flex flex-col ml-2 rounded-2xl shadow-xl bg-white"
-        style={{ width: isFullscreen ? "100%" : "90%" }}>
+      <div
+        className="flex flex-col ml-2 rounded-2xl shadow-xl bg-white"
+        style={{ width: isFullscreen ? "100%" : "90%" }}
+      >
         {selectedTopic && (
           <div className="header-top-section border-b rounded-2xl shadow-xl mt-2">
-            {/* controls */}
-          <div className="flex justify-between items-center p-4 ">
-  {/* Left: Previous/Next */}
-  <div className="flex items-center space-x-4">
-    <button
-      onClick={() => handleTopicClick(prevTopic)}
-      disabled={!prevTopic}
-      className="text-xl"
-    >
-      <PiRewindFill
-        className={`${!prevTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer text-black"}`}
-      />
-    </button>
-    <button
-      onClick={() => handleTopicClick(nextTopic)}
-      disabled={!nextTopic}
-      className="text-xl"
-    >
-      <PiFastForwardFill
-        className={`${!nextTopic ? "text-gray-400 cursor-not-allowed" : "cursor-pointer text-black"}`}
-      />
-    </button>
-  </div>
+            <div className="flex justify-between items-center p-4 ">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => handleTopicClick(prevTopic)}
+                  disabled={!prevTopic}
+                  className="text-xl"
+                >
+                  <PiRewindFill
+                    className={`${
+                      !prevTopic
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "cursor-pointer text-black"
+                    }`}
+                  />
+                </button>
+                <button
+                  onClick={() => handleTopicClick(nextTopic)}
+                  disabled={!nextTopic}
+                  className="text-xl"
+                >
+                  <PiFastForwardFill
+                    className={`${
+                      !nextTopic
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "cursor-pointer text-black"
+                    }`}
+                  />
+                </button>
+              </div>
 
-  {/* Right: Zoom, Bookmark, Fullscreen */}
-  <div className="flex items-center space-x-5 text-lg">
-    <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
-    <span className="text-lg">{zoom}%</span>
-    <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
-    <FaBookmark className="cursor-pointer" />
-    <button onClick={toggleFullScreen}>
-      {isFullscreen ? (
-        <FaCompress className="cursor-pointer" />
-      ) : (
-        <FaExpand className="cursor-pointer" />
-      )}
-    </button>
-      <FaFilePdf
-    className="cursor-pointer text-black"
-     // ← Call your export function here
-  />
-  </div>
-</div>
-                        {/* controls */}
-<div className="bg-yellow-400 text-black font-bold text-center py-1 rounded-xl ml-2 mr-2">
-  {currentChapter && (
-    <>
-      {/* Header (top) */}
-      <div className="text-sm md:text-base text-gray-700 font-semibold ">
-        {currentChapter.title}
-      </div>
+              <div className="flex items-center space-x-5 text-lg">
+                <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
+                <span className="text-lg">{zoom}%</span>
+                <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
+                <FaBookmark className="cursor-pointer" />
+                <button onClick={toggleFullScreen}>
+                  {isFullscreen ? (
+                    <FaCompress className="cursor-pointer" />
+                  ) : (
+                    <FaExpand className="cursor-pointer" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-      {/* Title (Top) */}
-      <div className="text-xl font-medium text-gray-800">
-        {currentChapter.header}
-      </div>
-    </>
-  )}
-</div>
+            <div className="bg-yellow-400 text-black font-bold text-center py-1 rounded-xl ml-2 mr-2">
+              {currentChapter && (
+                <>
+                  <div className="text-sm md:text-base text-gray-700 font-semibold ">
+                    {currentChapter.title}
+                  </div>
+                  <div className="text-xl font-medium text-gray-800">
+                    {currentChapter.header}
+                  </div>
+                </>
+              )}
+            </div>
 
             <div className="text-center font-semibold text-lg py-3 ">
               {selectedTopic.title} ~ {selectedTopic.header}
@@ -283,31 +265,38 @@ export default function BookReaderr() {
           </div>
         )}
 
-        <div
-          ref={contentContainerRef}
-          className="p-6 overflow-y-auto text-center flex-grow"
-          style={{ fontSize: `${zoom}%` }}
-        >
-          {loading ? (
-            <p className="text-gray-500">Loading book...</p>
-          ) : selectedTopic ? (
-            <div
-              ref={(el) => (contentRefs.current[selectedTopic.id] = el)}
-              className="text-left max-w-3xl mx-auto bg-white p-6 rounded shadow"
-            >
-              <h2 className="text-2xl font-bold mb-2">{selectedTopic.header}</h2>
-              {selectedTopic.title && (
-                <h3 className="text-lg italic text-gray-600 mb-4">{selectedTopic.title}</h3>
-              )}
-              <CitationContent node={selectedTopic} selectedNodeId={selectedTopic.id} />
-            </div>
-          ) : (
-            <img
-              src={getImageUrl(bookInfo?.cover)}
-              alt="Book Cover"
-              className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
-            />
-          )}
+        <div className="p-6 overflow-y-auto text-center flex-grow">
+          <div
+            style={{
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: "top left",
+              width: `${10000 / zoom}%`,
+              transition: "transform 0.2s ease",
+            }}
+          >
+            {loading ? (
+              <p className="text-gray-500">Loading book...</p>
+            ) : selectedTopic ? (
+              <div
+                ref={(el) => (contentRefs.current[selectedTopic.id] = el)}
+                className="text-left max-w-3xl mx-auto bg-white p-6 rounded shadow"
+              >
+                <h2 className="text-2xl font-bold mb-2">{selectedTopic.header}</h2>
+                {selectedTopic.title && (
+                  <h3 className="text-lg italic text-gray-600 mb-4">
+                    {selectedTopic.title}
+                  </h3>
+                )}
+                <CitationContent node={selectedTopic} selectedNodeId={selectedTopic.id} />
+              </div>
+            ) : (
+              <img
+                src={getImageUrl(bookInfo?.cover)}
+                alt="Book Cover"
+                className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
