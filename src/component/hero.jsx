@@ -18,16 +18,16 @@ const Hero = ({ keyword, setKeyword, onSearchButtonClick }) => {
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    setKeyword(value); // live update
+    setKeyword(value);
   };
 
   const handleSearchClick = () => {
-    onSearchButtonClick(); // scroll only here
+    onSearchButtonClick();
   };
 
   return (
-    <div className="h-auto flex flex-col px-[60px] pt-[40px] pb-[20px] box-border mt-[85px] font-body">
-      <div className="flex flex-col lg:flex-row justify-between items-center flex-1 min-h-0">
+    <div className="h-auto flex flex-col px-4 md:px-[60px] pt-[40px] pb-[20px] box-border mt-[85px] font-body">
+      <div className="flex flex-col lg:flex-row justify-between items-center flex-1 min-h-0 gap-8">
         <div className="max-w-[500px] w-full">
           <h4 className="text-lg text-gray-700 mb-2 font-serif">
             Welcome, {userName}
@@ -43,8 +43,8 @@ const Hero = ({ keyword, setKeyword, onSearchButtonClick }) => {
             The most appropriate book site to reach books.
           </p>
 
-          {/* Search Input */}
-          <div className="relative w-96 h-[48px]">
+          {/* ✅ Responsive Search Input */}
+          <div className="relative w-full max-w-md h-[48px]">
             <input
               type="text"
               placeholder="Find your favorite book here..."
@@ -62,7 +62,7 @@ const Hero = ({ keyword, setKeyword, onSearchButtonClick }) => {
           </div>
         </div>
 
-        <div className="mt-10 lg:mt-0 flex-shrink-0 w-[600px] h-auto">
+        <div className="mt-10 lg:mt-0 flex-shrink-0 w-full max-w-[600px] h-auto">
           <img
             src="https://static.vecteezy.com/system/resources/thumbnails/066/552/627/small/stacked-books-in-various-colors-and-sizes-displayed-on-a-white-background-showcasing-literary-diversity-and-potential-for-learning-photo.jpg"
             alt="Stack of colorful books"

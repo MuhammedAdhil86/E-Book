@@ -28,6 +28,8 @@ const CitationContent = ({ node, selectedNodeId }) => {
   const [selectedCitation, setSelectedCitation] = useState(null);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
+  const baseUrl = "https://mvdebook.blr1.digitaloceanspaces.com";
+
   useEffect(() => {
     if (node?.verified_content) {
       const processed = processCitationsForDisplay(node.verified_content, node.id);
@@ -37,6 +39,27 @@ const CitationContent = ({ node, selectedNodeId }) => {
       setProcessedContent(processed);
     }
   }, [node?.verified_content, node?.id]);
+
+  useEffect(() => {
+    const handleLinkClick = (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('/media')) {
+        e.preventDefault();
+        const fullUrl = baseUrl + href;
+        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+      }
+    };
+
+    const contentContainer = document.querySelector('.prose');
+    contentContainer?.addEventListener('click', handleLinkClick);
+
+    return () => {
+      contentContainer?.removeEventListener('click', handleLinkClick);
+    };
+  }, []);
 
   const processCitationsForDisplay = (html, nodeId) => {
     const citationRegex = /~@\[([^\]]+)\]~@([^~]*)~@/g;
@@ -193,7 +216,7 @@ const CitationContent = ({ node, selectedNodeId }) => {
             <div className="p-3 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={closeBottomSheet}
-                className="w-full bg-yellow-400  py-2 rounded-sm font-medium hover:bg-yellow-700 transition-colors text-sm"
+                className="w-full bg-yellow-400 py-2 rounded-sm font-medium hover:bg-yellow-700 transition-colors text-sm"
               >
                 Close
               </button>
