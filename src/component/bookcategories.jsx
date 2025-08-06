@@ -22,9 +22,20 @@ const BookCategories = ({ onCategorySelect }) => {
   const [categories, setCategories] = useState([]);
   const [viewAll, setViewAll] = useState(false);
   const [coloredCategories, setColoredCategories] = useState([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState('all'); // ✅ Track selected category
+  const [selectedCategoryId, setSelectedCategoryId] = useState('all');
+  const [isMobile, setIsMobile] = useState(false); // ✅ Track screen size
 
-  // Fetch categories
+  // ✅ Detect screen width
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint
+    };
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // ✅ Fetch categories from API
   useEffect(() => {
     api.get('/categories')
       .then((res) => {
@@ -36,18 +47,20 @@ const BookCategories = ({ onCategorySelect }) => {
       .catch((err) => console.error(err));
   }, []);
 
-  // Assign colors based on view state
+  // ✅ Apply category slicing and assign colors
   useEffect(() => {
-    const visible = viewAll ? categories : categories.slice(0, 5);
+    let visible = categories;
+    if (!viewAll) {
+      visible = isMobile ? categories.slice(0, 4) : categories.slice(0, 5);
+    }
     const colored = assignNonRepeatingColors(visible, bgClasses);
     setColoredCategories(colored);
-  }, [viewAll, categories]);
+  }, [viewAll, categories, isMobile]);
 
-  // Handle click
   const handleCategoryClick = (id) => {
-    setSelectedCategoryId(id); // ✅ Update internal state
+    setSelectedCategoryId(id);
     if (typeof onCategorySelect === 'function') {
-      onCategorySelect(id); // ✅ Send to parent
+      onCategorySelect(id);
     }
   };
 
