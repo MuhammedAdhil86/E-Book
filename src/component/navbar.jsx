@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // ✅ Step 1
 import toast from "react-hot-toast";
 
 import { useBookStore } from "../store/useBookStore";
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation(); // ✅ Step 2
 
   const navigate = useNavigate();
   const isAuthenticated = useBookStore((s) => s.isAuthenticated);
@@ -48,7 +49,16 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-6">
             {navItems.map((item, idx) => (
               <React.Fragment key={item.label}>
-                <Link to={item.href} className="text-sm text-gray-800 hover:text-black">
+                <Link
+                  to={item.href}
+                  className={`relative text-sm px-1 py-1 transition duration-300
+                    ${location.pathname === item.href ? "text-black font-semibold" : "text-gray-800"} hover:text-black
+                    before:content-[''] before:absolute before:bottom-0 before:left-0
+                    before:h-[2px] before:bg-black before:transition-all before:duration-300
+                    before:w-0 hover:before:w-full
+                    ${location.pathname === item.href ? "before:w-full" : ""}
+                  `}
+                >
                   {item.label}
                 </Link>
                 {idx < navItems.length - 1 && <span className="text-gray-400">|</span>}

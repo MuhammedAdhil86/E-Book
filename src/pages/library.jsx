@@ -29,11 +29,13 @@ export default function Library() {
       />
       <FeaturedBooks />
       <BookCategories onCategorySelect={setSelectedCategory} />
-      <BookList
-        selectedCategoryId={selectedCategory}
-        searchKeyword={searchKeyword}
-        ref={bookListRef}
-      />
+   <BookList
+  selectedCategoryId={selectedCategory}
+  searchKeyword={searchKeyword}
+  setSearchKeyword={setSearchKeyword}  // Pass state setter
+  onSearch={handleSearch}              // Scroll on typing
+  ref={bookListRef}
+/>
       <Footer />
     </div>
   );

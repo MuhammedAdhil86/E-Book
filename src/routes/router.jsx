@@ -31,6 +31,8 @@ export default function AppRouter() {
       <Route path="/invoice" element={<Invoice />} />
       <Route path="/quotes" element={<QuotesPage/>} />
       <Route path="/about" element={<About/>} />
+      <Route path="/subscription" element={<Subscription />} />
+
 
       {/* Protected Routes */}
       <Route
@@ -51,18 +53,7 @@ export default function AppRouter() {
         }
       />
 
-      {/* Allow login-only users (no active sub) */}
-      <Route
-        path="/subscription"
-        element={
-          <ProtectedRoute
-            redirectToIfUnauthenticated="/verse"
-            requireSubscription={false}
-          >
-            <Subscription />
-          </ProtectedRoute>
-        }
-      />
+  
 
       {/* Subscribed-only page (paid users) */}
       <Route

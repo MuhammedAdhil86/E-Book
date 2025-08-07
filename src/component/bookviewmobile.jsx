@@ -100,10 +100,7 @@ export default function BookViewMobile({
                 src={getImageUrl(bookData?.cover)}
                 alt="Book cover"
                 className="w-full h-full object-fill rounded-md shadow-xl"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = FALLBACK_IMAGE;
-                }}
+           
               />
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-10 h-2 bg-black/100 rounded-full blur-md z-0"></div>
             </div>
