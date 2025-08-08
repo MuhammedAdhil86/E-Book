@@ -9,7 +9,9 @@ import {
 
   FiMaximize,
   FiMinimize,
-  FiInfo
+  FiInfo,
+  FiChevronLeft, 
+  FiChevronRight,
 } from "react-icons/fi";
 import { PiRewindLight, PiFastForwardLight } from "react-icons/pi";
 import { useParams } from "react-router-dom";
@@ -186,11 +188,16 @@ export default function BookReaderr() {
               <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
                 {bookInfo?.title}
               </h2>
-              <div className="absolute right-0 flex items-center pr-2">
-                <button onClick={toggleSidebarFullScreen} title="Sidebar Fullscreen">
-                  {isSidebarFullscreen ? <FiMinimize /> : <FiMaximize />}
-                </button>
-              </div>
+          
+<div className="absolute right-0 flex items-center pr-2">
+  <button onClick={toggleSidebarFullScreen} title="Sidebar Fullscreen">
+    {isSidebarFullscreen ? (
+      <FiChevronLeft className="text-xl" />
+    ) : (
+      <FiChevronRight className="text-xl" />
+    )}
+  </button>
+</div>
             </div>
 
             <div className="relative mb-4">
