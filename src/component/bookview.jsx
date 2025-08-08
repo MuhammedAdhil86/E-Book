@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  FaSearch,
-  FaChevronLeft,
-  FaChevronRight,
-  FaSearchPlus,
-  FaSearchMinus,
-  FaExpand,
-  FaCompress,
-  FaBookmark,
-  FaInfoCircle
-} from "react-icons/fa";
-import { PiRewindFill, PiFastForwardFill } from "react-icons/pi";
+  FiSearch,
+  FiChevronDown,
+  FiChevronUp,
+  FiZoomIn,
+  FiZoomOut,
+  FiBookmark,
+
+  FiMaximize,
+  FiMinimize,
+  FiInfo
+} from "react-icons/fi";
+import { PiRewindLight, PiFastForwardLight } from "react-icons/pi";
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
 import DOMPurify from "dompurify";
@@ -180,14 +181,14 @@ export default function BookReaderr() {
           >
             <div className="relative mb-4 h-10 flex items-center justify-center border-b pb-2">
               <div className="absolute left-0 flex items-center pl-2 space-x-2">
-                <FaInfoCircle className="text-gray-500" title="Book Info" />
+                <FiInfo className="text-gray-500" title="Book Info" />
               </div>
               <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
                 {bookInfo?.title}
               </h2>
               <div className="absolute right-0 flex items-center pr-2">
                 <button onClick={toggleSidebarFullScreen} title="Sidebar Fullscreen">
-                  {isSidebarFullscreen ? <FaCompress /> : <FaExpand />}
+                  {isSidebarFullscreen ? <FiMinimize /> : <FiMaximize />}
                 </button>
               </div>
             </div>
@@ -200,7 +201,7 @@ export default function BookReaderr() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <FaSearch className="absolute top-2.5 right-2 text-gray-400" />
+              <FiSearch className="absolute top-2.5 right-2 text-gray-400" />
             </div>
 
             <div className="overflow-y-auto flex-grow">
@@ -211,7 +212,7 @@ export default function BookReaderr() {
                     className="w-full text-left font-semibold py-2 border-b flex justify-between items-center "
                   >
                     {ch.title}
-                    {expandedChapter === ch.id ? <FaChevronRight /> : <FaChevronLeft />}
+                    {expandedChapter === ch.id ? <FiChevronUp /> : <FiChevronDown />}
                   </button>
                   {expandedChapter === ch.id &&
                     renderTopics(searchQuery ? ch.children : ch.children || [])}
@@ -234,7 +235,7 @@ export default function BookReaderr() {
                     disabled={!prevTopic}
                     className="text-xl"
                   >
-                    <PiRewindFill
+                    <PiRewindLight
                       className={`${
                         !prevTopic
                           ? "text-gray-400 cursor-not-allowed"
@@ -247,7 +248,7 @@ export default function BookReaderr() {
                     disabled={!nextTopic}
                     className="text-xl"
                   >
-                    <PiFastForwardFill
+                    < PiFastForwardLight
                       className={`${
                         !nextTopic
                           ? "text-gray-400 cursor-not-allowed"
@@ -258,15 +259,15 @@ export default function BookReaderr() {
                 </div>
 
                 <div className="flex items-center space-x-5 text-lg">
-                  <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
+                  <FiZoomOut onClick={handleZoomOut} className="cursor-pointer" />
                   <span className="text-lg">{zoom}%</span>
-                  <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
-                  <FaBookmark className="cursor-pointer" />
+                  <FiZoomIn onClick={handleZoomIn} className="cursor-pointer" />
+                  <FiBookmark className="cursor-pointer" />
                   <button onClick={toggleFullScreen}>
                     {isFullscreen ? (
-                      <FaCompress className="cursor-pointer" />
+                      <FiMinimize className="cursor-pointer" />
                     ) : (
-                      <FaExpand className="cursor-pointer" />
+                      <FiMaximize className="cursor-pointer" />
                     )}
                   </button>
                 </div>

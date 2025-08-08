@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  FaSearch,
-  FaChevronDown,
-  FaChevronUp,
-  FaSearchPlus,
-  FaSearchMinus,
-  FaBookmark,
-  FaArrowLeft,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
-import { PiRewindFill, PiFastForwardFill } from "react-icons/pi";
+  FiSearch,
+  FiChevronDown,
+  FiChevronUp,
+  FiZoomIn,
+  FiZoomOut,
+  FiBookmark,
+  FiArrowLeft,
+} from "react-icons/fi";
+import { PiRewindLight, PiFastForwardLight } from "react-icons/pi";
 import CitationContent from "../component/book_reader/CitationContent";
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
@@ -72,7 +70,9 @@ export default function BookViewMobile({
 
   const getImageUrl = (url) => {
     if (!url) return FALLBACK_IMAGE;
-    return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
+    return url.startsWith("http")
+      ? url
+      : `${IMAGE_BASE_URL}${url.replace(/^\/+/, "")}`;
   };
 
   const findChapterForTopic = (topicId, chaptersList) => {
@@ -95,12 +95,11 @@ export default function BookViewMobile({
         <div className="p-4 space-y-4">
           {/* Header */}
           <div className="flex items-center space-x-4">
-            <div className="relative w-16 h-24">
+            <div className="relative w-20 h-28">
               <img
-                src={getImageUrl(bookData?.cover)}
+                src={getImageUrl(bookData?.cover_image)}
                 alt="Book cover"
                 className="w-full h-full object-fill rounded-md shadow-xl"
-           
               />
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-10 h-2 bg-black/100 rounded-full blur-md z-0"></div>
             </div>
@@ -121,7 +120,7 @@ export default function BookViewMobile({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <FaSearch className="absolute top-3 right-3 text-gray-400" />
+            <FiSearch className="absolute top-3 right-3 text-gray-400" />
           </div>
 
           {/* Contents */}
@@ -134,15 +133,16 @@ export default function BookViewMobile({
               <div key={ch.id} className="bg-gray-100 rounded-lg">
                 <button
                   onClick={() => handleChapterToggle(ch.id)}
-                  className="w-full flex justify-between items-center p-3 font-medium"
+                  className="w-full flex justify-between items-center p-3 font-medium text-left"
                 >
-                  {ch.title}
+                  <span className="flex-1 break-words">{ch.title}</span>
                   {expandedChapter === ch.id ? (
-                    <FaChevronUp />
+                    <FiChevronUp />
                   ) : (
-                    <FaChevronDown />
+                    <FiChevronDown />
                   )}
                 </button>
+
                 {expandedChapter === ch.id &&
                   ch.children?.map((topic) => (
                     <div
@@ -167,14 +167,14 @@ export default function BookViewMobile({
           {/* Top Controls */}
           <div className="flex items-center justify-between p-4 border-b">
             <button onClick={() => setSelectedTopic(null)}>
-              <FaArrowLeft className="text-lg" />
+              <FiArrowLeft className="text-lg" />
             </button>
             <div className="flex items-center space-x-4 text-lg">
               <button
                 onClick={() => handleTopicClick(prevTopic)}
                 disabled={!prevTopic}
               >
-                <PiRewindFill
+                <PiRewindLight
                   className={`${
                     !prevTopic
                       ? "text-gray-400 cursor-not-allowed"
@@ -186,7 +186,7 @@ export default function BookViewMobile({
                 onClick={() => handleTopicClick(nextTopic)}
                 disabled={!nextTopic}
               >
-                <PiFastForwardFill
+                <PiFastForwardLight
                   className={`${
                     !nextTopic
                       ? "text-gray-400 cursor-not-allowed"
@@ -194,10 +194,10 @@ export default function BookViewMobile({
                   }`}
                 />
               </button>
-              <FaSearchMinus onClick={handleZoomOut} className="cursor-pointer" />
+              <FiZoomOut onClick={handleZoomOut} className="cursor-pointer" />
               <span>{zoom}%</span>
-              <FaSearchPlus onClick={handleZoomIn} className="cursor-pointer" />
-              <FaBookmark className="cursor-pointer" />
+              <FiZoomIn onClick={handleZoomIn} className="cursor-pointer" />
+              <FiBookmark className="cursor-pointer" />
             </div>
           </div>
 
