@@ -24,6 +24,7 @@ export default function Navbar() {
     { label: "Home", href: "/" },
     { label: "Library", href: "/library" },
     { label: "About Us", href: "/about" },
+    { label: "My Bookmarks", href: "/bookmark" },
     { label: "Subscription", href: "/subscription" },
   ];
 

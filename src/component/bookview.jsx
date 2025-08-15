@@ -3,30 +3,27 @@ import {
   FiSearch,
   FiChevronDown,
   FiChevronUp,
-  FiZoomIn,
-  FiZoomOut,
-  FiBookmark,
-
-  FiMaximize,
-  FiMinimize,
   FiInfo,
-  FiChevronLeft, 
+  FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
-import { PiRewindLight, PiFastForwardLight } from "react-icons/pi";
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
-import DOMPurify from "dompurify";
 import CitationContent from "../component/book_reader/CitationContent";
-import BookViewMobile from "./bookviewmobile";
+import BookViewMobile from "../responsive/bookviewmobile";
+import Controls from "../ui/controls";
+import Cookies from "js-cookie";
+import { toast } from "react-hot-toast"; // ✅ Import toast
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
-const BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com";
+const FALLBACK_IMAGE =
+  "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1436194631i/2585989.jpg";
 
 const getImageUrl = (url) => {
-  if (!url)
-    return "https://dummyimage.com/300x200/cccccc/000000&text=No+Cover";
-  return url.startsWith("http") ? url : `${IMAGE_BASE_URL}${url}`;
+  if (!url) return FALLBACK_IMAGE;
+  return url.startsWith("http")
+    ? url
+    : `${IMAGE_BASE_URL}${url.replace(/^\/+/, "")}`;
 };
 
 export default function BookReaderr() {
@@ -40,8 +37,6 @@ export default function BookReaderr() {
   const [isSidebarFullscreen, setIsSidebarFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const contentRefs = useRef({});
-  const contentContainerRef = useRef();
-
   const [searchQuery, setSearchQuery] = useState("");
   const [showCitation, setShowCitation] = useState(false);
   const [citationData, setCitationData] = useState({ title: "", body: "" });
@@ -89,8 +84,8 @@ export default function BookReaderr() {
   const toggleFullScreen = () => setIsFullscreen((fs) => !fs);
   const toggleSidebarFullScreen = () => setIsSidebarFullscreen((fs) => !fs);
 
-  const searchFilter = (topics) => {
-    return topics
+  const searchFilter = (topics) =>
+    topics
       .map((topic) => {
         const children = searchFilter(topic.children || []);
         const match =
@@ -102,7 +97,6 @@ export default function BookReaderr() {
         return null;
       })
       .filter(Boolean);
-  };
 
   const renderTopics = (topics) => (
     <ul className="pl-4 py-2 space-y-1">
@@ -143,6 +137,33 @@ export default function BookReaderr() {
     ? findChapterForTopic(selectedTopic.id, chapters)
     : null;
 
+  // ---------------------- BOOKMARK LOGIC ----------------------
+  const handleAddBookmark = async () => {
+    const user = Cookies.get("user") ? JSON.parse(Cookies.get("user")) : null;
+    const userId = user?.id || user?.user_id;
+
+    if (!userId) {
+      toast.error("You must be logged in to add a bookmark.");
+      return;
+    }
+    if (!selectedTopic) {
+      toast.error("Please select a topic to bookmark.");
+      return;
+    }
+
+    try {
+      await api.post(`/user/bookmark/create`, {
+        user_id: userId,
+        book_id: selectedTopic.id,
+        info_id: bookId,
+      });
+      toast.success("Bookmark added successfully!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add bookmark");
+    }
+  };
+  // -------------------------------------------------------------
+
   return (
     <>
       {/* Mobile View */}
@@ -167,7 +188,11 @@ export default function BookReaderr() {
       </div>
 
       {/* Desktop View */}
-      <div className={`hidden md:flex h-screen ${isFullscreen ? "fixed inset-0 z-50 bg-white" : ""}`}>
+      <div
+        className={`hidden md:flex h-screen ${
+          isFullscreen ? "fixed inset-0 z-50 bg-white" : ""
+        }`}
+      >
         {isSidebarFullscreen && (
           <div
             className="fixed inset-0 bg-black opacity-50 z-40"
@@ -188,16 +213,19 @@ export default function BookReaderr() {
               <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
                 {bookInfo?.title}
               </h2>
-          
-<div className="absolute right-0 flex items-center pr-2">
-  <button onClick={toggleSidebarFullScreen} title="Sidebar Fullscreen">
-    {isSidebarFullscreen ? (
-      <FiChevronLeft className="text-xl" />
-    ) : (
-      <FiChevronRight className="text-xl" />
-    )}
-  </button>
-</div>
+
+              <div className="absolute right-0 flex items-center pr-2">
+                <button
+                  onClick={toggleSidebarFullScreen}
+                  title="Sidebar Fullscreen"
+                >
+                  {isSidebarFullscreen ? (
+                    <FiChevronLeft className="text-xl" />
+                  ) : (
+                    <FiChevronRight className="text-xl" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="relative mb-4">
@@ -235,50 +263,19 @@ export default function BookReaderr() {
         >
           {selectedTopic && (
             <div className="header-top-section border-b rounded-2xl shadow-xl mt-2">
-              <div className="flex justify-between items-center p-4 ">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => handleTopicClick(prevTopic)}
-                    disabled={!prevTopic}
-                    className="text-xl"
-                  >
-                    <PiRewindLight
-                      className={`${
-                        !prevTopic
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "cursor-pointer text-black"
-                      }`}
-                    />
-                  </button>
-                  <button
-                    onClick={() => handleTopicClick(nextTopic)}
-                    disabled={!nextTopic}
-                    className="text-xl"
-                  >
-                    < PiFastForwardLight
-                      className={`${
-                        !nextTopic
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "cursor-pointer text-black"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center space-x-5 text-lg">
-                  <FiZoomOut onClick={handleZoomOut} className="cursor-pointer" />
-                  <span className="text-lg">{zoom}%</span>
-                  <FiZoomIn onClick={handleZoomIn} className="cursor-pointer" />
-                  <FiBookmark className="cursor-pointer" />
-                  <button onClick={toggleFullScreen}>
-                    {isFullscreen ? (
-                      <FiMinimize className="cursor-pointer" />
-                    ) : (
-                      <FiMaximize className="cursor-pointer" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <Controls
+                prevTopic={prevTopic}
+                nextTopic={nextTopic}
+                zoom={zoom}
+                handleZoomIn={handleZoomIn}
+                handleZoomOut={handleZoomOut}
+                handleTopicClick={handleTopicClick}
+                toggleFullScreen={toggleFullScreen}
+                isFullscreen={isFullscreen}
+                bookId={bookInfo.id} // ✅ Book ID
+                contentId={selectedTopic?.id} // ✅ Pass the exact topic ID for bookmarking
+                onBookmarkClick={handleAddBookmark} // ✅ Call toast-enabled function
+              />
 
               <div className="bg-yellow-400 text-black font-bold text-center py-1 rounded-xl ml-2 mr-2">
                 {currentChapter && (
@@ -321,11 +318,14 @@ export default function BookReaderr() {
                       {selectedTopic.title}
                     </h3>
                   )}
-                  <CitationContent node={selectedTopic} selectedNodeId={selectedTopic.id} />
+                  <CitationContent
+                    node={selectedTopic}
+                    selectedNodeId={selectedTopic.id}
+                  />
                 </div>
               ) : (
                 <img
-                  src={getImageUrl(bookInfo?.cover)}
+                  src={getImageUrl(bookInfo?.cover_image)}
                   alt="Book Cover"
                   className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
                 />

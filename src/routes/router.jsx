@@ -18,6 +18,8 @@ import ProtectedRoute from './ProtectedRoute';
 import QuotesPage from '../pages/quotespage';
 import ViewBook from '../pages/viewbook';
 import About from '../pages/about';
+import Bookmarks from '../pages/bookmark';
+import BookmarkView from '../pages/bookmarkview';
 
 export default function AppRouter() {
   return (
@@ -32,6 +34,8 @@ export default function AppRouter() {
       <Route path="/quotes" element={<QuotesPage/>} />
       <Route path="/about" element={<About/>} />
       <Route path="/subscription" element={<Subscription />} />
+      <Route path="/bookmark" element={<Bookmarks />}/>
+         <Route path="/bookmarkview/:id" element={<BookmarkView />} />
 
 
       {/* Protected Routes */}

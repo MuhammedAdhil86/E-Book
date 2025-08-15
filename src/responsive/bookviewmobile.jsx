@@ -9,6 +9,9 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import { PiRewindLight, PiFastForwardLight } from "react-icons/pi";
+import { toast } from "react-hot-toast";
+import Cookies from "js-cookie";
+import api from "../api/Instance";
 import CitationContent from "../component/book_reader/CitationContent";
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
@@ -51,9 +54,15 @@ export default function BookViewMobile({
     return topics
       .map((topic) => {
         const children = searchFilter(topic.children || []);
+        const verifiedText = topic.verified_content
+          ? topic.verified_content.replace(/<[^>]*>/g, "").toLowerCase()
+          : "";
+
         const match =
           topic.header.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (topic.title || "").toLowerCase().includes(searchQuery.toLowerCase());
+          (topic.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+          verifiedText.includes(searchQuery.toLowerCase());
+
         if (match || children.length > 0) {
           return { ...topic, children };
         }
@@ -63,9 +72,17 @@ export default function BookViewMobile({
   };
 
   const filteredChapters = useMemo(() => {
-    return (searchQuery ? searchFilter(chapters) : chapters).filter(
-      (ch) => ch.children?.length > 0
-    );
+    if (!searchQuery) return chapters;
+
+    const results = searchFilter(chapters).filter((ch) => ch.children?.length > 0);
+
+    if (results.length > 0) {
+      setExpandedChapter(results[0].id);
+    } else {
+      setExpandedChapter(null);
+    }
+
+    return results;
   }, [searchQuery, chapters]);
 
   const getImageUrl = (url) => {
@@ -78,9 +95,7 @@ export default function BookViewMobile({
   const findChapterForTopic = (topicId, chaptersList) => {
     for (const chapter of chaptersList) {
       const allTopics = flattenTopics([chapter]);
-      if (allTopics.some((t) => t.id === topicId)) {
-        return chapter;
-      }
+      if (allTopics.some((t) => t.id === topicId)) return chapter;
     }
     return null;
   };
@@ -88,6 +103,33 @@ export default function BookViewMobile({
   const currentChapter = selectedTopic
     ? findChapterForTopic(selectedTopic.id, chapters)
     : null;
+
+  // ---------------------- BOOKMARK FUNCTION ----------------------
+  const handleAddBookmark = async () => {
+    const user = Cookies.get("user") ? JSON.parse(Cookies.get("user")) : null;
+    const userId = user?.id || user?.user_id;
+
+    if (!userId) {
+      toast.error("You must be logged in to add a bookmark.");
+      return;
+    }
+    if (!selectedTopic) {
+      toast.error("Please select a topic to bookmark.");
+      return;
+    }
+
+    try {
+      await api.post(`/user/bookmark/create`, {
+        user_id: userId,
+        book_id: selectedTopic.id,
+        info_id: bookData.id,
+      });
+      toast.success("Bookmark added successfully!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add bookmark");
+    }
+  };
+  // ---------------------------------------------------------------
 
   return (
     <div className="h-screen w-full bg-white overflow-y-auto">
@@ -136,11 +178,7 @@ export default function BookViewMobile({
                   className="w-full flex justify-between items-center p-3 font-medium text-left"
                 >
                   <span className="flex-1 break-words">{ch.title}</span>
-                  {expandedChapter === ch.id ? (
-                    <FiChevronUp />
-                  ) : (
-                    <FiChevronDown />
-                  )}
+                  {expandedChapter === ch.id ? <FiChevronUp /> : <FiChevronDown />}
                 </button>
 
                 {expandedChapter === ch.id &&
@@ -153,9 +191,7 @@ export default function BookViewMobile({
                       <div className="text-[13px] text-yellow-800 font-medium">
                         {topic.header}
                       </div>
-                      <div className="text-xs text-gray-500 italic">
-                        {topic.title}
-                      </div>
+                      <div className="text-xs text-gray-500 italic">{topic.title}</div>
                     </div>
                   ))}
               </div>
@@ -170,34 +206,28 @@ export default function BookViewMobile({
               <FiArrowLeft className="text-lg" />
             </button>
             <div className="flex items-center space-x-4 text-lg">
-              <button
-                onClick={() => handleTopicClick(prevTopic)}
-                disabled={!prevTopic}
-              >
+              <button onClick={() => handleTopicClick(prevTopic)} disabled={!prevTopic}>
                 <PiRewindLight
                   className={`${
-                    !prevTopic
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-black"
+                    !prevTopic ? "text-gray-400 cursor-not-allowed" : "text-black"
                   }`}
                 />
               </button>
-              <button
-                onClick={() => handleTopicClick(nextTopic)}
-                disabled={!nextTopic}
-              >
+              <button onClick={() => handleTopicClick(nextTopic)} disabled={!nextTopic}>
                 <PiFastForwardLight
                   className={`${
-                    !nextTopic
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-black"
+                    !nextTopic ? "text-gray-400 cursor-not-allowed" : "text-black"
                   }`}
                 />
               </button>
               <FiZoomOut onClick={handleZoomOut} className="cursor-pointer" />
               <span>{zoom}%</span>
               <FiZoomIn onClick={handleZoomIn} className="cursor-pointer" />
-              <FiBookmark className="cursor-pointer" />
+              {/* Bookmark Icon */}
+              <FiBookmark
+                className="cursor-pointer"
+                onClick={handleAddBookmark}
+              />
             </div>
           </div>
 
@@ -224,9 +254,7 @@ export default function BookViewMobile({
               className="bg-white rounded p-4 shadow"
             >
               <h2 className="text-lg font-bold mb-2">{selectedTopic.header}</h2>
-              <p className="text-sm italic text-gray-600 mb-3">
-                {selectedTopic.title}
-              </p>
+              <p className="text-sm italic text-gray-600 mb-3">{selectedTopic.title}</p>
               <CitationContent
                 node={selectedTopic}
                 selectedNodeId={selectedTopic.id}
