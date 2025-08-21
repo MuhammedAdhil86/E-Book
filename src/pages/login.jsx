@@ -33,7 +33,7 @@ export default function Login() {
     try {
       await verifyOtp(mobile, otp);
       setNotification("Login successful", "success"); // ✅ toast
-      navigate("/");
+      navigate("/library"); // 👈 redirect to /library
     } catch (e) {
       setNotification("Invalid OTP", "error"); // ✅ toast
     }
@@ -73,7 +73,7 @@ export default function Login() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
-                placeholder="9876543210"
+                placeholder="Enter your number"
                 className="w-full outline-none text-sm"
                 disabled={showOtp}
               />

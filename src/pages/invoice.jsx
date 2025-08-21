@@ -9,104 +9,113 @@ export default function Invoice() {
 
   const downloadPDF = () => {
     const doc = new jsPDF("p", "mm", "a4");
+    const pageWidth = doc.internal.pageSize.getWidth();
     const leftMargin = 20;
     let y = 20;
 
-    // ===== HEADER =====
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(40, 40, 40);
-    doc.text(" Motor Law", leftMargin, y);
+// ===== HEADER BAR =====
+doc.setFillColor(255, 225, 53);
+doc.rect(0, 0, pageWidth, 40, "F"); // Increased height for more padding
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(90, 90, 90);
-    y += 6;
-    doc.text("123 Legal Street, Justice City, India", leftMargin, y);
-    y += 5;
-    doc.text("Email: support@motorlaw.com | Phone: +91-9876543210", leftMargin, y);
+doc.setFont("helvetica", "bold");
+doc.setFontSize(20);
+doc.setTextColor(0, 0, 0); // Black text for good contrast
+doc.text("Motor Law", leftMargin, 20);
 
-    // ===== INVOICE TITLE =====
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(33, 37, 41);
-    doc.text("INVOICE", 190 - leftMargin, 20, { align: "right" });
+doc.setFontSize(10);
+doc.setFont("helvetica", "normal");
+doc.text("123 Legal Street, Justice City, India", leftMargin, 28);
+doc.text("support@motorlaw.com | +91-9876543210", leftMargin, 34);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`Invoice #: ${payment_id || "N/A"}`, 190 - leftMargin, 28, { align: "right" });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 190 - leftMargin, 34, { align: "right" });
+// ===== INVOICE TITLE =====
+doc.setFont("helvetica", "bold");
+doc.setFontSize(18);
+doc.setTextColor(0, 0, 0);
+doc.text("INVOICE", pageWidth - leftMargin, 20, { align: "right" });
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(11);
+doc.setTextColor(50, 50, 50);
+doc.text(`Invoice #: ${payment_id || "N/A"}`, pageWidth - leftMargin, 28, { align: "right" });
+doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - leftMargin, 34, { align: "right" });
 
     // ===== BILL TO =====
-    y += 15;
+    y = 50;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(30, 30, 30);
     doc.text("Billed To:", leftMargin, y);
 
-    y += 6;
+    y += 7;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(60, 60, 60);
     const fullName = user?.full_name || `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
     doc.text(fullName || "N/A", leftMargin, y);
-    y += 5;
+    y += 6;
     doc.text(user?.email || "N/A", leftMargin, y);
-    y += 5;
+    y += 6;
     doc.text(user?.mobile || "N/A", leftMargin, y);
 
-    // ===== PLAN DETAILS BOX =====
-    y += 10;
-    doc.setDrawColor(230);
-    doc.setLineWidth(0.2);
-    doc.rect(leftMargin, y, 170, 60);
+    // ===== DETAILS BOX =====
+    y += 15;
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(leftMargin, y, pageWidth - 2 * leftMargin, 65, 3, 3);
 
-    y += 8;
-    const labelX = leftMargin + 5;
-    const valueX = 100;
+    y += 10;
+    const labelX = leftMargin + 8;
+    const valueX = pageWidth / 2;
 
     const rows = [
       ["Plan Name", plan?.name || "N/A"],
       ["Duration", `${plan?.duration} month(s)`],
-      ["Amount Paid", `₹${plan?.price}`],
+      ["Amount Paid", `Rs.${plan?.price}`],
       ["Payment ID", payment_id || "N/A"],
       ["Date of Payment", new Date().toLocaleString()],
     ];
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(30, 30, 30);
+    doc.setTextColor(34, 34, 34);
     doc.text("Subscription Details", labelX, y);
 
-    y += 7;
+    y += 8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
     rows.forEach(([label, value]) => {
       doc.setTextColor(60, 60, 60);
       doc.text(`${label}:`, labelX, y);
+      doc.setTextColor(20, 20, 20);
       doc.text(`${value}`, valueX, y);
       y += 8;
     });
 
     // ===== TOTAL =====
     y += 5;
-    doc.setLineWidth(0.3);
-    doc.setDrawColor(180);
-    doc.line(labelX, y, 190, y);
-    y += 8;
+    doc.setDrawColor(200);
+    doc.line(labelX, y, pageWidth - leftMargin, y);
+    y += 10;
+
+    doc.setFillColor(255, 230, 150); // soft yellow box
+    doc.roundedRect(labelX, y - 6, pageWidth - leftMargin - labelX, 12, 2, 2, "F");
 
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
     doc.setTextColor(0, 0, 0);
-    doc.text("Total Amount", labelX, y);
-    doc.text(`₹${plan?.price}`, valueX, y);
+    doc.text("Total Amount", labelX + 3, y + 2);
+    doc.text(`Rs.${plan?.price}`, valueX, y + 2);
 
     // ===== FOOTER =====
-    y += 20;
+    y += 30;
+    doc.setDrawColor(220);
+    doc.line(leftMargin, y, pageWidth - leftMargin, y);
+
+    y += 10;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(
       "Thank you for subscribing to Motor Law. Please contact support for any queries.",
-      105,
+      pageWidth / 2,
       y,
       { align: "center" }
     );
@@ -121,7 +130,7 @@ export default function Invoice() {
   }, [state]);
 
   return (
-     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white py-10 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-white py-10 px-4 flex items-center justify-center">
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-300 relative">
         {/* Title */}
         <h1 className="text-4xl font-bold text-center text-green-700 mb-2">
@@ -139,31 +148,31 @@ export default function Invoice() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700 text-sm">
             <div>
-              <p className="font-medium">👤 Full Name:</p>
+              <p className="font-medium">Full Name:</p>
               <p>{user?.full_name || `${user?.first_name || ""} ${user?.last_name || ""}`}</p>
             </div>
             <div>
-              <p className="font-medium">📧 Email:</p>
+              <p className="font-medium">Email:</p>
               <p>{user?.email}</p>
             </div>
             <div>
-              <p className="font-medium">📱 Mobile:</p>
+              <p className="font-medium">Mobile:</p>
               <p>{user?.mobile}</p>
             </div>
             <div>
-              <p className="font-medium">📦 Plan:</p>
+              <p className="font-medium">Plan:</p>
               <p>{plan?.name}</p>
             </div>
             <div>
-              <p className="font-medium">💰 Amount Paid:</p>
-              <p>₹{plan?.price}</p>
+              <p className="font-medium">Amount Paid:</p>
+              <p>Rs.{plan?.price}</p>
             </div>
             <div>
-              <p className="font-medium">⏱ Duration:</p>
+              <p className="font-medium">Duration:</p>
               <p>{plan?.duration} month(s)</p>
             </div>
             <div>
-              <p className="font-medium">🧾 Payment ID:</p>
+              <p className="font-medium">Payment ID:</p>
               <p>{payment_id}</p>
             </div>
             <div>
@@ -179,14 +188,14 @@ export default function Invoice() {
             onClick={() => navigate("/")}
             className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-lg shadow"
           >
-            ⬅ Back to Home
+            Back to Home
           </button>
 
           <button
             onClick={downloadPDF}
             className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-6 py-2 rounded-lg shadow"
           >
-            📥 Download PDF Invoice
+            Download PDF Invoice
           </button>
         </div>
       </div>

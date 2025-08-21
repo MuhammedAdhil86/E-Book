@@ -1,19 +1,13 @@
+//bookreader
 import React, { useState, useEffect, useRef } from "react";
-import {
-  FiSearch,
-  FiChevronDown,
-  FiChevronUp,
-  FiInfo,
-  FiChevronLeft,
-  FiChevronRight,
-} from "react-icons/fi";
 import { useParams } from "react-router-dom";
 import api from "../api/Instance";
 import CitationContent from "../component/book_reader/CitationContent";
 import BookViewMobile from "../responsive/bookviewmobile";
 import Controls from "../ui/controls";
 import Cookies from "js-cookie";
-import { toast } from "react-hot-toast"; // ✅ Import toast
+import { toast } from "react-hot-toast";
+import Sidebar from "../component/book_reader/Sidebar"; // <-- new import
 
 const IMAGE_BASE_URL = "https://mvdebook.blr1.digitaloceanspaces.com/media/";
 const FALLBACK_IMAGE =
@@ -26,7 +20,7 @@ const getImageUrl = (url) => {
     : `${IMAGE_BASE_URL}${url.replace(/^\/+/, "")}`;
 };
 
-export default function BookReaderr() {
+export default function BookReader() {
   const { id: bookId } = useParams();
   const [bookInfo, setBookInfo] = useState(null);
   const [chapters, setChapters] = useState([]);
@@ -37,6 +31,7 @@ export default function BookReaderr() {
   const [isSidebarFullscreen, setIsSidebarFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const contentRefs = useRef({});
+  const contentContainerRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCitation, setShowCitation] = useState(false);
   const [citationData, setCitationData] = useState({ title: "", body: "" });
@@ -193,76 +188,29 @@ export default function BookReaderr() {
           isFullscreen ? "fixed inset-0 z-50 bg-white" : ""
         }`}
       >
-        {isSidebarFullscreen && (
-          <div
-            className="fixed inset-0 bg-black opacity-50 z-40"
-            onClick={toggleSidebarFullScreen}
+        {/* Sidebar */}
+        {!isFullscreen && (
+          <Sidebar
+            bookInfo={bookInfo}
+            chapters={searchQuery ? searchFilter(chapters) : chapters}
+            expandedChapter={expandedChapter}
+            toggleChapter={toggleChapter}
+            renderTopics={renderTopics}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isSidebarFullscreen={isSidebarFullscreen}
+            toggleSidebarFullScreen={toggleSidebarFullScreen}
           />
         )}
 
-        {!isFullscreen && (
-          <div
-            className={`shadow-xl p-4 flex flex-col rounded-xl bg-white z-50 ${
-              isSidebarFullscreen ? "fixed inset-0 w-full h-full" : "w-[28%]"
-            }`}
-          >
-            <div className="relative mb-4 h-10 flex items-center justify-center border-b pb-2">
-              <div className="absolute left-0 flex items-center pl-2 space-x-2">
-                <FiInfo className="text-gray-500" title="Book Info" />
-              </div>
-              <h2 className="font-bold text-lg text-center truncate max-w-[70%]">
-                {bookInfo?.title}
-              </h2>
-
-              <div className="absolute right-0 flex items-center pr-2">
-                <button
-                  onClick={toggleSidebarFullScreen}
-                  title="Sidebar Fullscreen"
-                >
-                  {isSidebarFullscreen ? (
-                    <FiChevronLeft className="text-xl" />
-                  ) : (
-                    <FiChevronRight className="text-xl" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder={`Search inside ${bookInfo?.title || "this book"}`}
-                className="w-full border rounded p-2 pr-8 text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FiSearch className="absolute top-2.5 right-2 text-gray-400" />
-            </div>
-
-            <div className="overflow-y-auto flex-grow">
-              {(searchQuery ? searchFilter(chapters) : chapters).map((ch) => (
-                <div key={ch.id}>
-                  <button
-                    onClick={() => toggleChapter(ch.id)}
-                    className="w-full text-left font-semibold py-2 border-b flex justify-between items-center "
-                  >
-                    {ch.title}
-                    {expandedChapter === ch.id ? <FiChevronUp /> : <FiChevronDown />}
-                  </button>
-                  {expandedChapter === ch.id &&
-                    renderTopics(searchQuery ? ch.children : ch.children || [])}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+        {/* Main Content Area */}
         <div
-          className="flex flex-col ml-2 rounded-2xl shadow-xl bg-white"
-          style={{ width: isFullscreen ? "100%" : "90%" }}
+          className="flex flex-col ml-2 rounded-2xl shadow-xl"
+          style={{ width: isFullscreen ? "100%" : "75%" }}
         >
           {selectedTopic && (
             <div className="header-top-section border-b rounded-2xl shadow-xl mt-2">
+              {/* ✅ Controls */}
               <Controls
                 prevTopic={prevTopic}
                 nextTopic={nextTopic}
@@ -272,65 +220,64 @@ export default function BookReaderr() {
                 handleTopicClick={handleTopicClick}
                 toggleFullScreen={toggleFullScreen}
                 isFullscreen={isFullscreen}
-                bookId={bookInfo.id} // ✅ Book ID
-                contentId={selectedTopic?.id} // ✅ Pass the exact topic ID for bookmarking
-                onBookmarkClick={handleAddBookmark} // ✅ Call toast-enabled function
+                bookId={bookInfo?.id}
+                contentId={selectedTopic?.id}
+                onBookmarkClick={handleAddBookmark}
               />
 
-              <div className="bg-yellow-400 text-black font-bold text-center py-1 rounded-xl ml-2 mr-2">
+              {/* Chapter info */}
+              <div className="bg-yellow-400 text-black font-bold text-center py-3 rounded-xl ml-2 mr-2">
                 {currentChapter && (
-                  <>
-                    <div className="text-sm md:text-base text-gray-700 font-semibold ">
-                      {currentChapter.title}
-                    </div>
-                    <div className="text-xl font-medium text-gray-800">
-                      {currentChapter.header}
-                    </div>
-                  </>
+                  <div className="text-xl font-medium text-gray-800 mt-1">
+                    {currentChapter.title}
+                  </div>
                 )}
               </div>
 
+              {/* Topic header */}
               <div className="text-center font-semibold text-lg py-3 ">
                 {selectedTopic.title} ~ {selectedTopic.header}
               </div>
             </div>
           )}
 
-          <div className="p-6 overflow-y-auto text-center flex-grow">
-            <div
-              style={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top left",
-                width: `${10000 / zoom}%`,
-                transition: "transform 0.2s ease",
-              }}
-            >
-              {loading ? (
-                <p className="text-gray-500">Loading book...</p>
-              ) : selectedTopic ? (
-                <div
-                  ref={(el) => (contentRefs.current[selectedTopic.id] = el)}
-                  className="text-left max-w-3xl mx-auto bg-white p-6 rounded shadow"
-                >
-                  <h2 className="text-2xl font-bold mb-2">{selectedTopic.header}</h2>
-                  {selectedTopic.title && (
-                    <h3 className="text-lg italic text-gray-600 mb-4">
-                      {selectedTopic.title}
-                    </h3>
-                  )}
-                  <CitationContent
-                    node={selectedTopic}
-                    selectedNodeId={selectedTopic.id}
-                  />
-                </div>
-              ) : (
-                <img
-                  src={getImageUrl(bookInfo?.cover_image)}
-                  alt="Book Cover"
-                  className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
+          {/* Content Area */}
+          <div
+            ref={contentContainerRef}
+            className="p-6 overflow-y-auto text-center flex-grow"
+          >
+            {loading ? (
+              <p className="text-gray-500">Loading book...</p>
+            ) : selectedTopic ? (
+              <div
+                ref={(el) => (contentRefs.current[selectedTopic.id] = el)}
+                className="text-left max-w-3xl mx-auto bg-white p-6 rounded shadow"
+                style={{
+                  fontSize: `${zoom}%`,
+                  lineHeight: `${1.5 + (zoom - 100) / 200}em`,
+                }}
+              >
+                <h2 className="text-2xl font-bold mb-2">
+                  {selectedTopic.header}
+                </h2>
+                {selectedTopic.title && (
+                  <h3 className="text-lg italic text-gray-600 mb-4">
+                    {selectedTopic.title}
+                  </h3>
+                )}
+
+                <CitationContent
+                  node={selectedTopic}
+                  selectedNodeId={selectedTopic.id}
                 />
-              )}
-            </div>
+              </div>
+            ) : (
+              <img
+                src={getImageUrl(bookInfo?.cover_image)}
+                alt={bookInfo?.title || "Book Cover"}
+                className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
+              />
+            )}
           </div>
         </div>
       </div>

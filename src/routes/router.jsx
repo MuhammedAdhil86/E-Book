@@ -20,6 +20,7 @@ import ViewBook from '../pages/viewbook';
 import About from '../pages/about';
 import Bookmarks from '../pages/bookmark';
 import BookmarkView from '../pages/bookmarkview';
+import Settings from '../pages/settings';
 
 export default function AppRouter() {
   return (
@@ -35,6 +36,7 @@ export default function AppRouter() {
       <Route path="/about" element={<About/>} />
       <Route path="/subscription" element={<Subscription />} />
       <Route path="/bookmark" element={<Bookmarks />}/>
+      <Route path="/settings" element={<Settings/>}/>
          <Route path="/bookmarkview/:id" element={<BookmarkView />} />
 
 

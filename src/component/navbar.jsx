@@ -1,59 +1,57 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaTimes } from "react-icons/fa";
-import { Link, useNavigate, useLocation } from "react-router-dom"; // ✅ Step 1
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { useBookStore } from "../store/useBookStore";
+import MobileNavbar from "../responsive/navbarmobile"; // ✅ import split component
+import Confirm from "../ui/conform"; // ✅ confirmation modal
 
 export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const location = useLocation(); // ✅ Step 2
-
+  const [showConfirm, setShowConfirm] = useState(false); // ✅ confirm state
+  const location = useLocation();
   const navigate = useNavigate();
+
   const isAuthenticated = useBookStore((s) => s.isAuthenticated);
   const logout = useBookStore((s) => s.logout);
 
+  // ✅ final logout handler
   const handleLogout = () => {
     logout();
-    toast.success("Logout successful ");
+    toast.success("Logout successful");
     navigate("/");
   };
 
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Library", href: "/library" },
-    { label: "About Us", href: "/about" },
     { label: "My Bookmarks", href: "/bookmark" },
     { label: "Subscription", href: "/subscription" },
+    { label: "Settings", href: "/settings" },
   ];
-
-  const mobileMenuVariants = {
-    hidden: { y: "-100vh" },
-    visible: { y: 0, transition: { when: "beforeChildren", staggerChildren: 0.1 } },
-    exit: { y: "-100vh", transition: { when: "afterChildren", staggerChildren: 0.05, staggerDirection: -1 } },
-  };
-
-  const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
-    exit: { y: 50, opacity: 0 },
-  };
 
   return (
     <>
-      {/* Navbar */}
+      {/* Main Navbar */}
       <nav className="bg-[#fcf6f1] py-4 fixed inset-x-0 top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link to="/" className="text-lg font-serifTitle text-gray-900">Motor Vehicles Law</Link>
+          {/* Logo / Brand */}
+          <Link to="/" className="text-lg font-serifTitle text-gray-900">
+            Motor Vehicles Law
+          </Link>
 
+          {/* Desktop menu */}
           <div className="hidden lg:flex items-center space-x-6">
             {navItems.map((item, idx) => (
               <React.Fragment key={item.label}>
                 <Link
                   to={item.href}
                   className={`relative text-sm px-1 py-1 transition duration-300
-                    ${location.pathname === item.href ? "text-black font-semibold" : "text-gray-800"} hover:text-black
+                    ${
+                      location.pathname === item.href
+                        ? "text-black font-semibold"
+                        : "text-gray-800"
+                    } hover:text-black
                     before:content-[''] before:absolute before:bottom-0 before:left-0
                     before:h-[2px] before:bg-black before:transition-all before:duration-300
                     before:w-0 hover:before:w-full
@@ -62,25 +60,48 @@ export default function Navbar() {
                 >
                   {item.label}
                 </Link>
-                {idx < navItems.length - 1 && <span className="text-gray-400">|</span>}
+                {idx < navItems.length - 1 && (
+                  <span className="text-gray-400">|</span>
+                )}
               </React.Fragment>
             ))}
 
             <span className="text-gray-400">|</span>
 
+            {/* Auth buttons styled same as navItems with icons */}
             {isAuthenticated ? (
-              <button onClick={handleLogout} className="text-sm text-gray-800 hover:text-red-600">
-                Logout
+              <button
+                onClick={() => setShowConfirm(true)} // ✅ show confirm
+                className={`flex items-center gap-2 relative text-sm px-3 py-1 
+                  transition duration-300 hover:text-red-500 hover:border-yellow-500
+                  before:content-[''] before:absolute before:bottom-0 before:left-0
+                  before:h-[2px] before:transition-all before:duration-300
+                  before:w-0 hover:before:w-full
+                `}
+              >
+                <FiLogOut size={16} className="hover:text-red-500" />
               </button>
             ) : (
-              <Link to="/verse" className="text-sm text-gray-800 hover:text-black">
-                Login
+              <Link
+                to="/verse"
+                className={`flex items-center gap-2 relative text-sm px-3 py-1 
+                  transition duration-300 hover:text-yellow-500 hover:border-yellow-500
+                  before:content-[''] before:absolute before:bottom-0 before:left-0
+                  before:h-[2px] before:transition-all before:duration-300
+                  before:w-0 hover:before:w-full
+                `}
+              >
+                <FiLogIn size={16} />
+                <span>Login</span>
               </Link>
             )}
           </div>
 
           {/* Mobile hamburger */}
-          <button className="lg:hidden p-2 text-gray-800" onClick={() => setIsMobileOpen(true)}>
+          <button
+            className="lg:hidden p-2 text-gray-800"
+            onClick={() => setIsMobileOpen(true)}
+          >
             <div className="space-y-1">
               <span className="block w-6 h-0.5 bg-gray-800" />
               <span className="block w-6 h-0.5 bg-gray-800" />
@@ -90,60 +111,22 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            className="fixed inset-0 z-40 bg-[#fcf6f1] flex flex-col"
-            variants={mobileMenuVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <div className="flex justify-end p-4">
-              <button onClick={() => setIsMobileOpen(false)} className="text-gray-800">
-                <FaTimes size={24} />
-              </button>
-            </div>
-            <div className="text-center font-serifTitle text-xl mb-4">Motor Vehicles Law</div>
-            <div className="border-b mx-6 mb-6" />
-            <nav className="flex flex-col gap-4 px-6">
-              {navItems.map(item => (
-                <motion.div key={item.label} variants={itemVariants}>
-                  <Link
-                    to={item.href}
-                    onClick={() => setIsMobileOpen(false)}
-                    className="text-base text-gray-800 py-2 border-b block"
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
-              <motion.div variants={itemVariants}>
-                {isAuthenticated ? (
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsMobileOpen(false);
-                    }}
-                    className="text-base text-gray-800 py-2 border-b w-full text-left"
-                  >
-                    Logout
-                  </button>
-                ) : (
-                  <Link
-                    to="/verse"
-                    onClick={() => setIsMobileOpen(false)}
-                    className="text-base text-gray-800 py-2 border-b block"
-                  >
-                    Login
-                  </Link>
-                )}
-              </motion.div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Navbar */}
+      <MobileNavbar
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
+        navItems={navItems}
+        isAuthenticated={isAuthenticated}
+        handleLogout={() => setShowConfirm(true)} // ✅ show confirm in mobile too
+      />
+
+      {/* ✅ Confirm Modal */}
+      <Confirm
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleLogout}
+        message="Are you sure you want to logout?"
+      />
     </>
   );
 }

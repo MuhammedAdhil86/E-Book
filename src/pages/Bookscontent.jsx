@@ -1,11 +1,11 @@
 import React from 'react'
 
-import BookReaderr from '../component/bookview'
+import BookReader from '../component/bookview'
 export default function Bookscontent() {
   return (
     <div>
       
-      <BookReaderr/>
+      <BookReader/>
       
     </div>
   )

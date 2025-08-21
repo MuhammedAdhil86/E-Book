@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   FiSearch,
   FiChevronDown,
@@ -25,19 +25,22 @@ export default function BookViewMobile({
   setSelectedTopic,
   setShowCitation,
   setCitationData,
+  loading,
 }) {
-  const [expandedChapter, setExpandedChapter] = useState(null);
+  const [expandedChapters, setExpandedChapters] = useState([]); // ✅ multiple expanded chapters
   const [zoom, setZoom] = useState(100);
   const [searchQuery, setSearchQuery] = useState("");
+  const contentContainerRef = useRef(null);
+  const contentRefs = useRef({});
 
+  // manual toggle
   const handleChapterToggle = (id) => {
-    setExpandedChapter(expandedChapter === id ? null : id);
+    setExpandedChapters((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
   };
 
-  const handleTopicClick = (topic) => {
-    setSelectedTopic(topic);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleTopicClick = (topic) => setSelectedTopic(topic);
 
   const handleZoomIn = () => setZoom((z) => Math.min(z + 10, 200));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 10, 50));
@@ -50,8 +53,24 @@ export default function BookViewMobile({
   const prevTopic = flatTopics[selectedIndex - 1];
   const nextTopic = flatTopics[selectedIndex + 1];
 
-  const searchFilter = (topics) => {
-    return topics
+  // highlight helper
+  const highlightMatch = (text) => {
+    if (!searchQuery) return text;
+    const regex = new RegExp(`(${searchQuery})`, "gi");
+    return text.split(regex).map((part, i) =>
+      part.toLowerCase() === searchQuery.toLowerCase() ? (
+        <mark key={i} className="bg-yellow-200">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
+
+  // recursive search filter
+  const searchFilter = (topics) =>
+    topics
       .map((topic) => {
         const children = searchFilter(topic.children || []);
         const verifiedText = topic.verified_content
@@ -64,26 +83,35 @@ export default function BookViewMobile({
           verifiedText.includes(searchQuery.toLowerCase());
 
         if (match || children.length > 0) {
-          return { ...topic, children };
+          return { ...topic, children, _match: match };
         }
         return null;
       })
       .filter(Boolean);
-  };
 
   const filteredChapters = useMemo(() => {
     if (!searchQuery) return chapters;
-
-    const results = searchFilter(chapters).filter((ch) => ch.children?.length > 0);
-
-    if (results.length > 0) {
-      setExpandedChapter(results[0].id);
-    } else {
-      setExpandedChapter(null);
-    }
-
-    return results;
+    return searchFilter(chapters);
   }, [searchQuery, chapters]);
+
+  // ✅ auto expand on search term change
+  useEffect(() => {
+    if (!searchQuery) {
+      setExpandedChapters([]);
+      return;
+    }
+    const matchedIds = [];
+    const collectMatches = (nodes) => {
+      nodes.forEach((n) => {
+        if (n._match || (n.children && n.children.length > 0)) {
+          matchedIds.push(n.id);
+        }
+        if (n.children) collectMatches(n.children);
+      });
+    };
+    collectMatches(filteredChapters);
+    setExpandedChapters(matchedIds);
+  }, [searchQuery, filteredChapters]);
 
   const getImageUrl = (url) => {
     if (!url) return FALLBACK_IMAGE;
@@ -92,9 +120,12 @@ export default function BookViewMobile({
       : `${IMAGE_BASE_URL}${url.replace(/^\/+/, "")}`;
   };
 
+  const flattenAllTopics = (nodes = []) =>
+    nodes.flatMap((n) => [n, ...flattenAllTopics(n.children || [])]);
+
   const findChapterForTopic = (topicId, chaptersList) => {
     for (const chapter of chaptersList) {
-      const allTopics = flattenTopics([chapter]);
+      const allTopics = flattenAllTopics([chapter]);
       if (allTopics.some((t) => t.id === topicId)) return chapter;
     }
     return null;
@@ -150,6 +181,21 @@ export default function BookViewMobile({
               <p className="text-gray-500 text-sm">
                 Author: {bookData?.author || "Unknown"}
               </p>
+
+              <p className="font-body text-sm text-yellow-500">
+                Updated up to:{" "}
+                {bookData?.last_updated_at
+                  ? new Date(bookData.last_updated_at).toLocaleString("en-IN", {
+                      timeZone: "Asia/Kolkata",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  : "N/A"}
+              </p>
             </div>
           </div>
 
@@ -177,11 +223,17 @@ export default function BookViewMobile({
                   onClick={() => handleChapterToggle(ch.id)}
                   className="w-full flex justify-between items-center p-3 font-medium text-left"
                 >
-                  <span className="flex-1 break-words">{ch.title}</span>
-                  {expandedChapter === ch.id ? <FiChevronUp /> : <FiChevronDown />}
+                  <span className="flex-1 break-words">
+                    {highlightMatch(ch.title)}
+                  </span>
+                  {expandedChapters.includes(ch.id) ? (
+                    <FiChevronUp />
+                  ) : (
+                    <FiChevronDown />
+                  )}
                 </button>
 
-                {expandedChapter === ch.id &&
+                {expandedChapters.includes(ch.id) &&
                   ch.children?.map((topic) => (
                     <div
                       key={topic.id}
@@ -189,9 +241,11 @@ export default function BookViewMobile({
                       className="px-4 py-2 text-left text-sm text-black border-t border-gray-200 bg-white cursor-pointer hover:bg-gray-50"
                     >
                       <div className="text-[13px] text-yellow-800 font-medium">
-                        {topic.header}
+                        {highlightMatch(topic.header)}
                       </div>
-                      <div className="text-xs text-gray-500 italic">{topic.title}</div>
+                      <div className="text-xs text-gray-500 italic">
+                        {highlightMatch(topic.title)}
+                      </div>
                     </div>
                   ))}
               </div>
@@ -223,11 +277,7 @@ export default function BookViewMobile({
               <FiZoomOut onClick={handleZoomOut} className="cursor-pointer" />
               <span>{zoom}%</span>
               <FiZoomIn onClick={handleZoomIn} className="cursor-pointer" />
-              {/* Bookmark Icon */}
-              <FiBookmark
-                className="cursor-pointer"
-                onClick={handleAddBookmark}
-              />
+              <FiBookmark className="cursor-pointer" onClick={handleAddBookmark} />
             </div>
           </div>
 
@@ -243,25 +293,42 @@ export default function BookViewMobile({
             </div>
           </div>
 
-          {/* Content */}
-          <div className="p-4 overflow-y-auto flex-grow text-left">
-            <div
-              style={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top left",
-                width: `${10000 / zoom}%`,
-              }}
-              className="bg-white rounded p-4 shadow"
-            >
-              <h2 className="text-lg font-bold mb-2">{selectedTopic.header}</h2>
-              <p className="text-sm italic text-gray-600 mb-3">{selectedTopic.title}</p>
-              <CitationContent
-                node={selectedTopic}
-                selectedNodeId={selectedTopic.id}
-                setShowCitation={setShowCitation}
-                setCitationData={setCitationData}
+          {/* Content Area */}
+          <div
+            ref={contentContainerRef}
+            className="p-6 overflow-y-auto text-center flex-grow"
+            style={{ fontSize: `${zoom}%` }}
+          >
+            {loading ? (
+              <p className="text-gray-500">Loading book...</p>
+            ) : selectedTopic ? (
+              <div
+                ref={(el) => (contentRefs.current[selectedTopic.id] = el)}
+                className="text-left max-w-3xl mx-auto bg-white p-6 rounded shadow"
+              >
+                <h2 className="text-2xl font-bold mb-2">
+                  {highlightMatch(selectedTopic.header)}
+                </h2>
+                {selectedTopic.title && (
+                  <h3 className="text-lg italic text-gray-600 mb-4">
+                    {highlightMatch(selectedTopic.title)}
+                  </h3>
+                )}
+
+                <CitationContent
+                  node={selectedTopic}
+                  selectedNodeId={selectedTopic.id}
+                  setShowCitation={setShowCitation}
+                  setCitationData={setCitationData}
+                />
+              </div>
+            ) : (
+              <img
+                src={getImageUrl(bookData?.cover_image)}
+                alt={bookData?.title || "Book Cover"}
+                className="max-h-[80vh] object-contain rounded shadow-lg mx-auto"
               />
-            </div>
+            )}
           </div>
         </div>
       )}
